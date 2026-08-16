@@ -261,6 +261,18 @@ def get_guidelines():
     return {
         "guidelines": [
             {
+                "guideline_ref": "PRGI General Rule",
+                "title": "Non-Text Characters, Symbols & Emojis Prohibition",
+                "description": "Titles containing non-text characters, signs, symbols including mathematical symbols ('+', '*', etc.), pictographs, hallmarks, logos, monograms, phonograms, emojis, etc. are strictly prohibited.",
+                "examples": ["News+", "Daily*Express", "Star #1", "News 📰", "Daily@Morning"]
+            },
+            {
+                "guideline_ref": "PRGI General Rule",
+                "title": "Numeric-Only Title Prohibition",
+                "description": "Titles consisting solely of numbers or digits without substantive alphabetical/text characters are not permitted.",
+                "examples": ["12345", "2024", "24 7", "99 100"]
+            },
+            {
                 "guideline_ref": "Guideline 12",
                 "title": "Disallowed Law Enforcement & State Organ Words",
                 "description": "Prohibits words implying official authority, police, military, courts, or vigilance bodies.",

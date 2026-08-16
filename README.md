@@ -2,13 +2,13 @@
 
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Test Suite](https://img.shields.io/badge/Pytest-15%2F15%20Passed%20(100%25)-success.svg)](https://pytest.org/)
-[![Benchmark](https://img.shields.io/badge/Benchmark-17%2F17%20Passed%20(100%25)-brightgreen.svg)]()
-[![Latency](https://img.shields.io/badge/Query%20Latency-5.55%20ms%20avg-ff69b4.svg)]()
+[![Test Suite](https://img.shields.io/badge/Pytest-19%2F19%20Passed%20(100%25)-success.svg)](https://pytest.org/)
+[![Benchmark](https://img.shields.io/badge/Benchmark-23%2F23%20Passed%20(100%25)-brightgreen.svg)]()
+[![Latency](https://img.shields.io/badge/Query%20Latency-5.62%20ms%20avg-ff69b4.svg)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![PRGI Guidelines](https://img.shields.io/badge/Compliance-PRP%20Act%202023-orange.svg)]()
 
-An enterprise-grade, high-performance automated title verification system built for the **Press Registrar General of India (PRGI)** under the Ministry of Information and Broadcasting (Govt. of India). The platform screens proposed newspaper and periodical titles against **82,628+ registered titles** (scaling to 160,000+) and strictly enforces statutory PRGI guidelines, phonetics, orthography, deceptive combinations, cross-lingual translations, and application concurrency locks in **sub-10ms query latency**.
+An enterprise-grade, high-performance automated title verification system built for the **Press Registrar General of India (PRGI)** under the Ministry of Information and Broadcasting (Govt. of India). The platform screens proposed newspaper and periodical titles against **82,628+ registered titles** (scaling to 160,000+) and strictly enforces statutory PRGI guidelines, non-text symbols/math character prohibitions, numeric-only bans, phonetics, orthography, deceptive combinations, cross-lingual translations, and application concurrency locks in **sub-10ms query latency**.
 
 ---
 
@@ -168,9 +168,12 @@ sequenceDiagram
 
 ---
 
-### Stage 1: Pre-processing & Anchor Extraction
-- **Purpose & Rationale:** Titles often include periodicities (e.g. *Daily, Weekly, Patrika, Samachar, Morning, Sunday*) and articles (*The, A, An*). Evaluating titles purely on whole-string matching causes false similarities (e.g. *"Aster Medical Journal"* vs *"Quantum Aerospace Journal"* both sharing "Journal"). Stage 1 normalizes casing, strips punctuation, and extracts the core **distinctive anchor words**.
-- **Pure Generic Rule:** If a title consists **only** of generic periodicities and geographic identifiers without a distinctive anchor (e.g., *"The Daily News"*, *"Weekly Express India"*, *"Dainik Samachar"*), it is immediately rejected with `0% Probability`.
+### Stage 1: Pre-processing, Structural Validation & Anchor Extraction
+- **Purpose & Rationale:** 
+  1. **Non-Text Characters & Symbols Rule:** Under statutory PRGI rules, titles containing non-text characters, signs, symbols including mathematical symbols (like `'+'`, `'*'`, `'@'`, `'#'`, `'%'`, etc.), pictographs, photographs, hallmarks, logos, monograms, phonograms, emojis, etc. are strictly prohibited. The system detects any prohibited symbols or emojis and rejects immediately with `0% Probability` (`REJECTED_PROHIBITED_SYMBOLS`).
+  2. **Numeric-Only Title Rule:** Titles consisting solely of numbers, digits, or numerical figures without substantive alphabetical/text characters (e.g. `"12345"`, `"2024"`, `"24 7"`) are strictly disallowed under PRGI guidelines and rejected with `0% Probability` (`REJECTED_PURE_NUMERIC`). Note: Titles combining numbers with substantive words (e.g. `"Channel 24 National"`) are valid.
+  3. **Anchor Extraction & Generic Stripping:** Titles often include periodicities (e.g. *Daily, Weekly, Patrika, Samachar, Morning, Sunday*) and articles (*The, A, An*). Evaluating titles purely on whole-string matching causes false similarities. Stage 1 normalizes casing, strips punctuation, and extracts the core **distinctive anchor words**.
+- **Pure Generic Rule:** If a title consists **only** of generic periodicities and geographic identifiers without a distinctive anchor (e.g., *"The Daily News"*, *"Weekly Express India"*, *"Dainik Samachar"*), it is immediately rejected with `0% Probability` (`REJECTED_STAGE_1`).
 - **Engine Implementation:** [backend/pipeline/stage1_preprocessor.py](file:///c:/Users/Anurag/Desktop/prgi-title-verifier/backend/pipeline/stage1_preprocessor.py)
 
 ---
@@ -601,6 +604,8 @@ The application features a modern glassmorphic interface accessible at `http://l
 
 | Statutory Guideline | Summary of Provision | Engine Implementation |
 | :--- | :--- | :--- |
+| **PRGI General Rule (Symbols)** | Prohibits non-text characters, mathematical symbols (`+`, `*`, etc.), pictographs, hallmarks, emojis. | `Stage 1`: Character category & symbol scanner (`REJECTED_PROHIBITED_SYMBOLS`). |
+| **PRGI General Rule (Numbers)** | Prohibits titles consisting solely of numbers or numerical digits. | `Stage 1`: Linguistic letter validation (`REJECTED_PURE_NUMERIC`). |
 | **Guideline 1 (Distinctiveness)** | Title must possess distinct identity and not be generic. | `Stage 1`: Anchor word extraction & pure generic rejection. |
 | **Guideline 5 (Deceptive Resemblance)** | Prohibits visually or phonetically similar titles causing confusion. | `Stage 4A` & `Stage 4B`: Phonetic Soundex & Levenshtein distance. |
 | **Guideline 7 (Combination of Titles)** | Prohibits joining two existing registered titles ("Frankentitles"). | `Stage 3`: $O(N^2)$ N-gram partition decomposition. |

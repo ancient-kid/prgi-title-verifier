@@ -24,6 +24,26 @@ def test_api_health():
     assert data["total_registered_titles"] > 0
 
 
+def test_api_verify_prohibited_symbols():
+    res = client.post("/api/verify", json={"title": "News+"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["verification_probability"] == 0.0
+    assert data["status"] == "Rejected"
+    assert data["decision"] == "REJECTED_PROHIBITED_SYMBOLS"
+    assert any("Prohibited Non-Text Characters" in r["rule"] for r in data["reasons"])
+
+
+def test_api_verify_numeric_only():
+    res = client.post("/api/verify", json={"title": "2024"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["verification_probability"] == 0.0
+    assert data["status"] == "Rejected"
+    assert data["decision"] == "REJECTED_PURE_NUMERIC"
+    assert any("Numeric-Only" in r["rule"] for r in data["reasons"])
+
+
 def test_api_verify_disallowed():
     res = client.post("/api/verify", json={"title": "The Crime Investigation Daily"})
     assert res.status_code == 200
@@ -53,6 +73,8 @@ def test_api_verify_approved():
 def test_api_batch_verify():
     res = client.post("/api/batch-verify", json={
         "titles": [
+            "News+",
+            "2024",
             "The Crime Investigation Daily",
             "The Daily News",
             "Zylophonic Quantum Astroflora"
@@ -60,8 +82,8 @@ def test_api_batch_verify():
     })
     assert res.status_code == 200
     data = res.json()
-    assert data["total_processed"] == 3
-    assert data["rejected_count"] == 2
+    assert data["total_processed"] == 5
+    assert data["rejected_count"] == 4
     assert data["approved_count"] == 1
 
 

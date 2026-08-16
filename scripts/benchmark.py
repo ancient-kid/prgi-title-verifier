@@ -1,14 +1,16 @@
 """
 PRGI Title Verification Benchmark & Diagnostic Verification Script
 Tests accuracy across:
-1. Disallowed keywords (Stage 2)
-2. Pure generic combinations (Stage 1)
-3. Frankentitles (Stage 3)
-4. Phonetic clones (Stage 4A)
-5. Orthographic typos & reorderings (Stage 4B)
-6. Cross-lingual semantic equivalents (Stage 4C)
-7. Novel approved titles
-8. Pending application lock collision
+1. Prohibited non-text symbols & math characters (+, *, #, emojis) (Stage 1)
+2. Numeric-only titles (just numbers) (Stage 1)
+3. Pure generic combinations (Stage 1)
+4. Disallowed keywords & Emblems Act (Stage 2)
+5. Frankentitles (Stage 3)
+6. Phonetic clones (Stage 4A)
+7. Orthographic typos & reorderings (Stage 4B)
+8. Cross-lingual semantic equivalents (Stage 4C)
+9. Novel approved titles
+10. Pending application lock collision
 """
 
 import sys
@@ -24,7 +26,47 @@ from backend.lock_manager import LockManager
 from backend.pipeline.engine import TitleVerificationEngine
 
 BENCHMARK_TEST_CASES = [
-    # 1. Pure generic rejection test cases (Stage 1)
+    # 1. Prohibited non-text symbols & mathematical characters (Stage 1)
+    {
+        "title": "News+",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Prohibited Math Symbol '+')"
+    },
+    {
+        "title": "Daily*Express",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Prohibited Symbol '*')"
+    },
+    {
+        "title": "Star #1",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Prohibited Sign '#')"
+    },
+
+    # 2. Purely numeric titles (just numbers) (Stage 1)
+    {
+        "title": "2024",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Numeric-Only Title '2024')"
+    },
+    {
+        "title": "12345",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Numeric-Only Title '12345')"
+    },
+    {
+        "title": "24 7",
+        "expected_status": "Rejected",
+        "expected_prob": 0.0,
+        "category": "Stage 1 (Numeric-Only Title '24 7')"
+    },
+
+    # 3. Pure generic rejection test cases (Stage 1)
     {
         "title": "The Daily News",
         "expected_status": "Rejected",
@@ -38,12 +80,12 @@ BENCHMARK_TEST_CASES = [
         "category": "Stage 1 (Pure Generic)"
     },
     
-    # 2. PRGI Guideline Blacklist violations (Stage 2)
+    # 4. PRGI Guideline Blacklist violations (Stage 2)
     {
         "title": "The Crime Investigation Daily",
         "expected_status": "Rejected",
         "expected_prob": 0.0,
-        "category": "Stage 2 (Disallowed Words - Crime/Investigation)"
+        "category": "Stage 2 (Disallowed Words - Crime)"
     },
     {
         "title": "Mumbai Police Chronicle",
@@ -70,43 +112,43 @@ BENCHMARK_TEST_CASES = [
         "category": "Stage 2 (National Emblems Act)"
     },
 
-    # 3. Frankentitle compound titles (Stage 3)
+    # 5. Frankentitle compound titles (Stage 3)
     {
         "title": "Hindu Indian Express",
         "expected_status": "Rejected",
         "expected_prob": 0.0,
-        "category": "Stage 3 (Frankentitle - The Hindu + Indian Express)"
+        "category": "Stage 3 (Frankentitle Combination)"
     },
 
-    # 4. Phonetic similarity tests (Stage 4A)
+    # 6. Phonetic similarity tests (Stage 4A)
     {
         "title": "Namascar India",
         "expected_status": "Rejected",
         "expected_prob_max": 25.0,
-        "category": "Stage 4A (Phonetic Homophone - Namaskar India)"
+        "category": "Stage 4A (Phonetic Homophone - Namaskar)"
     },
     {
         "title": "Daineq Bhaskar",
         "expected_status": "Rejected",
         "expected_prob_max": 25.0,
-        "category": "Stage 4A (Phonetic Homophone - Dainik Bhaskar)"
+        "category": "Stage 4A (Phonetic Homophone - Dainik)"
     },
 
-    # 5. Orthographic / Typo tests (Stage 4B)
+    # 7. Orthographic / Typo tests (Stage 4B)
     {
         "title": "The Tymes of India",
         "expected_status": "Rejected",
         "expected_prob_max": 35.0,
-        "category": "Stage 4B (Orthographic Typo - Times of India)"
+        "category": "Stage 4B (Orthographic Typo - Times)"
     },
     {
         "title": "Hindustan Tymes",
         "expected_status": "Rejected",
         "expected_prob_max": 35.0,
-        "category": "Stage 4B (Orthographic Typo - Hindustan Times)"
+        "category": "Stage 4B (Orthographic Typo - Hindustan)"
     },
 
-    # 6. Cross-Lingual Semantic Equivalence (Stage 4C)
+    # 8. Cross-Lingual Semantic Equivalence (Stage 4C)
     {
         "title": "Daily Evening",
         "expected_status": "Rejected",
@@ -117,16 +159,16 @@ BENCHMARK_TEST_CASES = [
         "title": "Morning News",
         "expected_status": "Rejected",
         "expected_prob_max": 25.0,
-        "category": "Stage 4C (Cross-Lingual - Prabhat Samachar / Dainik Prabhat)"
+        "category": "Stage 4C (Cross-Lingual - Prabhat Samachar)"
     },
     {
         "title": "People's Voice",
         "expected_status": "Rejected",
         "expected_prob_max": 25.0,
-        "category": "Stage 4C (Cross-Lingual - Jan Vani / Lok Vani)"
+        "category": "Stage 4C (Cross-Lingual - Jan Vani)"
     },
 
-    # 7. Novel distinctive title (Should be Approved with high probability)
+    # 9. Novel distinctive title (Should be Approved with high probability)
     {
         "title": "Zylophonic Quantum Astroflora",
         "expected_status": "Approved",
@@ -153,8 +195,8 @@ def run_benchmark():
     total_latency_ms = 0.0
     
     print(f"\nRunning {total_tests} test cases across all verification stages:\n")
-    print(f"{'Category':<35} | {'Submitted Title':<30} | {'Status':<10} | {'Prob':<6} | {'Time (ms)':<9} | {'Result'}")
-    print("-" * 105)
+    print(f"{'Category':<38} | {'Submitted Title':<30} | {'Status':<10} | {'Prob':<6} | {'Time (ms)':<9} | {'Result'}")
+    print("-" * 110)
     
     for tc in BENCHMARK_TEST_CASES:
         res = engine.verify_title(tc["title"])
@@ -178,10 +220,10 @@ def run_benchmark():
         else:
             result_str = f"[FAIL] Got {res['status']} ({res['verification_probability']}%)"
             
-        print(f"{tc['category'][:35]:<35} | {tc['title'][:30]:<30} | {res['status']:<10} | {str(res['verification_probability'])+'%':<6} | {latency:<9.2f} | {result_str}")
+        print(f"{tc['category'][:38]:<38} | {tc['title'][:30]:<30} | {res['status']:<10} | {str(res['verification_probability'])+'%':<6} | {latency:<9.2f} | {result_str}")
 
-    # 8. Pending Lock Concurrency Collision Test
-    print("-" * 105)
+    # 10. Pending Lock Concurrency Collision Test
+    print("-" * 110)
     print("\nTesting Concurrency Lock Conflict (Pending Application Lock):")
     lock_title = "Sunrise Orbit Post"
     print(f"-> User A applying for '{lock_title}' with 600s lock...")
