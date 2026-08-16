@@ -14,6 +14,9 @@ If any rule is violated, immediately triggers a 0% verification probability with
 import re
 from typing import Dict, List, Optional, Set, Tuple
 
+from backend.company.company_name_rule import check_protected_name
+
+
 # PRGI Guideline 12: Prohibited / Disallowed Words Blacklist
 DISALLOWED_ENFORCEMENT_WORDS: Dict[str, str] = {
     "police": "Guideline 12: Use of word 'Police' or related police insignia is strictly prohibited to prevent public deception.",
@@ -81,15 +84,27 @@ NATIONAL_EMBLEMS_AND_PROTECTED_NAMES: Dict[str, str] = {
     "mahatma gandhi": "Guideline 4: National leaders' names without context or permission are restricted."
 }
 
-# Guideline 14: Obscene / Vulgar / Defamatory / Hate Terms
+# Guideline 14: Obscene / Vulgar / Defamatory / Curse / Hate Terms
 OBSCENE_OR_DEFAMATORY_TERMS: Set[str] = {
+    # Criminal / Terror / Hate terms
     "terrorist", "terrorism", "jihad", "naxal", "naxalite", "extremist",
     "scam", "fraud", "blackmail", "smuggler", "mafia", "gangster", "don",
-    "murder", "killer", "loot", "dacoit", "goonda", "gunda"
+    "murder", "killer", "loot", "dacoit", "goonda", "gunda",
+
+    # English Curse Words & Obscenities
+    "fuck", "fucking", "fucked", "fucker", "shit", "bitch", "bastard", "asshole",
+    "ass", "crap", "dick", "pussy", "cock", "whore", "slut", "porn", "porno",
+    "pornography", "nude", "erotic",
+
+    # Indian Transliterated Curse Words & Vulgar Terms
+    "chutiya", "chutiye", "gandu", "bhosdike", "bhosdi", "madarchod",
+    "behenchod", "bhenchod", "gaand", "harami", "kamina", "kamine",
+    "saala", "saali", "kutta", "kutti"
 }
 
 
-def check_guidelines(cleaned_title: str, tokens: List[str]) -> Dict[str, any]:
+
+def check_guidelines(cleaned_title: str, tokens: List[str], anchor_words: str = "") -> Dict[str, any]:
     """
     Enforce PRGI guidelines and blacklists against the title.
     
@@ -102,6 +117,19 @@ def check_guidelines(cleaned_title: str, tokens: List[str]) -> Dict[str, any]:
     """
     violations = []
     
+    # 0. Check Protected Corporate / Brand / Organization Names
+    protected_res = check_protected_name(cleaned_title)
+    if not protected_res and anchor_words and anchor_words != cleaned_title:
+        protected_res = check_protected_name(anchor_words)
+
+    if protected_res:
+        violations.append({
+            "rule": protected_res["rule"],
+            "term": protected_res["matched_name"],
+            "guideline_ref": "Protected Corporate Name Rule",
+            "explanation": protected_res["explanation"]
+        })
+        
     title_lower = f" {cleaned_title} "
     
     # 1. Check Disallowed Enforcement Words (single words and multi-word phrases)

@@ -154,7 +154,10 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
     m1_str = " ".join([m for m in m1 if m])
     m2_str = " ".join([m for m in m2 if m])
     if m1_str and m1_str == m2_str:
-        return 1.0
+        char_sim = JaroWinkler.similarity(" ".join(w1), " ".join(w2)) if JaroWinkler else 0.8
+        if char_sim >= 0.70:
+            return 1.0
+
 
     # Token-level bipartite alignment matching
     used_indices = set()
@@ -178,10 +181,18 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
             
             # Exact metaphone match
             if tok_m1 and tok_m2 and tok_m1 == tok_m2:
-                score = 1.0
+                char_sim = JaroWinkler.similarity(w1[i], w2[j]) if JaroWinkler else 0.8
+                if char_sim >= 0.70:
+                    score = 1.0
+                else:
+                    score = 0.50
             # Exact Indic soundex match
             elif tok_s1 and tok_s2 and tok_s1 == tok_s2:
-                score = 0.95
+                char_sim = JaroWinkler.similarity(w1[i], w2[j]) if JaroWinkler else 0.8
+                if char_sim >= 0.70:
+                    score = 0.95
+                else:
+                    score = 0.40
             elif JaroWinkler:
                 sim_m = JaroWinkler.similarity(tok_m1, tok_m2) if tok_m1 and tok_m2 else 0.0
                 sim_s = JaroWinkler.similarity(tok_s1, tok_s2) if tok_s1 and tok_s2 else 0.0

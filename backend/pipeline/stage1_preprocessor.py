@@ -18,7 +18,7 @@ PURE_GENERIC_WORDS: Set[str] = {
     "the", "a", "an", "daily", "weekly", "fortnightly", "monthly", "bimonthly", 
     "quarterly", "half-yearly", "yearly", "annual", "morning", "evening", 
     "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
-    "today", "now", "news", "express", "chronicle", "herald", "bulletin", 
+    "today", "now", "news", "express", "times", "chronicle", "herald", "bulletin", 
     "journal", "gazette", "post", "mail", "voice", "tribune", "mirror", "report", 
     "reporter", "press", "media", "digest", "review", "dispatch", "update", 
     "leader", "courier", "star", "standard", "observer", "frontline", "current",
@@ -47,10 +47,12 @@ GENERIC_PREFIXES: Set[str] = {
 
 # Suffix-specific words to strip
 GENERIC_SUFFIXES: Set[str] = {
-    "news", "express", "herald", "chronicle", "bulletin", "journal", 
+    "times", "news", "express", "herald", "chronicle", "bulletin", "journal", 
     "gazette", "post", "mail", "voice", "samachar", "sandesh", "patrika", 
     "prabhat", "sandhya", "vani", "varta", "vartha", "today", "live", "24x7", 
-    "media", "press", "digest", "review"
+    "media", "press", "digest", "review", "daily", "weekly", "monthly", "yearly",
+    "annual", "tribune", "mirror", "star", "standard", "observer", "report",
+    "reporter", "courier", "leader", "dispatch", "update", "akhbar", "roznama"
 }
 
 

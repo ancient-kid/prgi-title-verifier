@@ -134,7 +134,7 @@ class TitleVerificationEngine:
             }
 
         # Stage 2: Guideline Enforcement & Blacklist Checking
-        s2_res = check_guidelines(cleaned_title, tokens)
+        s2_res = check_guidelines(cleaned_title, tokens, anchor_words=anchor_words)
         if not s2_res["passed"]:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             reasons = [
@@ -241,6 +241,15 @@ class TitleVerificationEngine:
                 
                 max_score_for_cand = max(ortho_score, ph_score, sem_score)
                 
+                # Check exact token overlap between target anchor and candidate
+                cand_tokens = set(cand_clean.split())
+                anchor_token_set = set(anchor_words.split()) if anchor_words else set(cleaned_title.split())
+                common_tokens = anchor_token_set.intersection(cand_tokens)
+                if common_tokens:
+                    # If candidate shares exact non-generic token, boost candidate similarity
+                    overlap_ratio = len(common_tokens) / max(len(anchor_token_set), len(cand_tokens))
+                    max_score_for_cand = max(max_score_for_cand, overlap_ratio * 0.95)
+                    
                 max_ortho_score = max(max_ortho_score, ortho_score)
                 max_phonetic_score = max(max_phonetic_score, ph_score)
                 max_semantic_score = max(max_semantic_score, sem_score)
