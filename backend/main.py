@@ -238,9 +238,13 @@ def release_lock(title: str = Query(...), applicant_id: str = Query(...)):
 
 
 @app.get("/api/titles/search")
-def search_registered_titles(query: str = Query("", min_length=0), limit: int = Query(25, ge=1, le=100)):
-    """Instant search across registered titles database."""
-    results = titles_index.search_titles(query=query, limit=limit)
+def search_registered_titles(
+    query: str = Query("", min_length=0),
+    limit: int = Query(25, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Instant search across registered titles database using PostgreSQL B-tree index."""
+    results = titles_index.search_titles(query=query, limit=limit, db=db)
     return {
         "query": query,
         "total_results": len(results),
