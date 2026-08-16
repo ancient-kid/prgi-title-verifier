@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # 1. FastAPI Verification API Gateway
+  api:
+    build: .
+    container_name: prgi_verification_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://prgi_user:prgi_password@postgres:5432/prgi_db
+      - REDIS_URL=redis://redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - HOST=0.0.0.0
+      - PORT=8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  # 2. Elasticsearch 8.x Cluster (with Double Metaphone & N-gram Token Filters)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: prgi_elasticsearch
+    environment:
+      - node.name=prgi-es01
+      - cluster.name=prgi-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. PostgreSQL Database (Master Registry & Audit Logs)
+  postgres:
+    image: postgres:16-alpine
+    container_name: prgi_postgres
+    environment:
+      - POSTGRES_USER=prgi_user
+      - POSTGRES_PASSWORD=prgi_password
+      - POSTGRES_DB=prgi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prgi_user -d prgi_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 4. Redis In-Memory Cache (Pending Application Locks with TTL)
+  redis:
+    image: redis:7-alpine
+    container_name: prgi_redis
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 5. Celery Asynchronous NLP Worker
+  celery_worker:
+    build: .
+    container_name: prgi_celery_worker
+    command: celery -A backend.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://prgi_user:prgi_password@postgres:5432/prgi_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  es_data:
+    driver: local
+  pg_data:
+    driver: local
+  redis_data:
+    driver: local

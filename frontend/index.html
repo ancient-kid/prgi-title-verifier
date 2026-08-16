@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRGI Title Verification System | Press Registrar General of India</title>
+    <meta name="description" content="Automated AI and Rule-Based Title Verification Engine for the Press Registrar General of India (PRGI) under PRP Act 2023.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="dark-theme">
+    <!-- Background glow ambient circles -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <div class="app-layout">
+        <!-- Top Navigation Header -->
+        <header class="navbar">
+            <div class="nav-brand">
+                <div class="emblem-container">
+                    <div class="ashoka-icon">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">PRGI TITLE VERIFIER <span class="badge-tag">AI CORE</span></div>
+                    <div class="brand-sub">Press Registrar General of India &bull; PRP Act 2023</div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-links">
+                <button class="nav-tab active" data-tab="studio-tab">
+                    <i data-lucide="sparkles"></i> Verification Studio
+                </button>
+                <button class="nav-tab" data-tab="batch-tab">
+                    <i data-lucide="layers"></i> Batch Screening
+                </button>
+                <button class="nav-tab" data-tab="lock-tab">
+                    <i data-lucide="lock"></i> Lock Simulator
+                </button>
+                <button class="nav-tab" data-tab="rules-tab">
+                    <i data-lucide="book-open"></i> PRGI Rulebook
+                </button>
+                <button class="nav-tab" data-tab="db-tab">
+                    <i data-lucide="database"></i> Registry Browser
+                </button>
+            </nav>
+
+            <div class="nav-status">
+                <div class="status-indicator online"></div>
+                <span class="status-text" id="system-status-label">160k+ Titles Indexed</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            
+            <!-- ========================================================= -->
+            <!-- TAB 1: Verification Studio -->
+            <!-- ========================================================= -->
+            <section id="studio-tab" class="tab-content active">
+                <div class="studio-grid">
+                    
+                    <!-- Left: Input & Preset Controls -->
+                    <div class="card glass-card input-panel">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="file-search"></i> Title Application Verification
+                            </div>
+                            <span class="pill-info">Real-time Multi-Stage Funnel</span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="title-input">Proposed Periodical / Newspaper Title</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="type" class="input-icon"></i>
+                                <input type="text" id="title-input" placeholder="e.g. The Daily Mumbai Express, Namascar India..." autocomplete="off">
+                                <button id="clear-btn" class="icon-btn" title="Clear input"><i data-lucide="x"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="language-select">Target Language</label>
+                                <select id="language-select">
+                                    <option value="English">English</option>
+                                    <option value="Hindi">Hindi (हिंदी)</option>
+                                    <option value="Bengali">Bengali (বাংলা)</option>
+                                    <option value="Marathi">Marathi (मराठी)</option>
+                                    <option value="Tamil">Tamil (தமிழ்)</option>
+                                    <option value="Telugu">Telugu (తెలుగు)</option>
+                                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                                    <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                                    <option value="Malayalam">Malayalam (മലയാളം)</option>
+                                    <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                                    <option value="Urdu">Urdu (اردو)</option>
+                                    <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="periodicity-select">Periodicity</label>
+                                <select id="periodicity-select">
+                                    <option value="Daily">Daily</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Fortnightly">Fortnightly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Quarterly">Quarterly</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="state-select">State / UT</label>
+                                <select id="state-select">
+                                    <option value="National">National (All India)</option>
+                                    <option value="Delhi">Delhi</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                    <option value="West Bengal">West Bengal</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Karnataka">Karnataka</option>
+                                    <option value="Gujarat">Gujarat</option>
+                                    <option value="Telangana">Telangana</option>
+                                    <option value="Kerala">Kerala</option>
+                                    <option value="Punjab">Punjab</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button id="verify-btn" class="btn btn-primary">
+                                <i data-lucide="scan"></i> Verify Title Now
+                            </button>
+                            <button id="apply-btn" class="btn btn-success" disabled>
+                                <i data-lucide="lock"></i> Submit & Lock Title
+                            </button>
+                        </div>
+
+                        <!-- Presets for fast testing -->
+                        <div class="presets-section">
+                            <div class="presets-label">Quick Verification Benchmarks:</div>
+                            <div class="preset-chips">
+                                <button class="chip" data-title="The Crime Investigation Daily" data-tooltip="Guideline 12 Disallowed Words">
+                                    <span class="chip-dot red"></span> Crime Investigation Daily
+                                </button>
+                                <button class="chip" data-title="The Daily Mumbai Express" data-tooltip="Anchor Extraction">
+                                    <span class="chip-dot green"></span> The Daily Mumbai Express
+                                </button>
+                                <button class="chip" data-title="The Daily News" data-tooltip="Pure Generic Violation">
+                                    <span class="chip-dot red"></span> The Daily News
+                                </button>
+                                <button class="chip" data-title="Hindu Indian Express" data-tooltip="Frankentitle Mashup">
+                                    <span class="chip-dot red"></span> Hindu Indian Express
+                                </button>
+                                <button class="chip" data-title="Namascar India" data-tooltip="Phonetic Homophone">
+                                    <span class="chip-dot red"></span> Namascar India
+                                </button>
+                                <button class="chip" data-title="Daily Evening" data-tooltip="Cross-Lingual Equivalent to Pratidin Sandhya">
+                                    <span class="chip-dot red"></span> Daily Evening
+                                </button>
+                                <button class="chip" data-title="Astra Quantum Aerospace Journal" data-tooltip="Eligible Unique Title">
+                                    <span class="chip-dot green"></span> Astra Quantum Aerospace
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Results & Diagnostic Funnel -->
+                    <div class="card glass-card result-panel">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="gauge"></i> Verification Report & Probability
+                            </div>
+                            <div id="execution-time" class="time-badge">Latency: 0 ms</div>
+                        </div>
+
+                        <!-- Probability Gauge Header -->
+                        <div class="probability-hero">
+                            <div class="gauge-wrapper">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring__circle-bg" stroke="#1E293B" stroke-width="12" fill="transparent" r="54" cx="70" cy="70"/>
+                                    <circle id="prob-circle" class="progress-ring__circle" stroke="#10B981" stroke-width="12" fill="transparent" r="54" cx="70" cy="70"/>
+                                </svg>
+                                <div class="gauge-center">
+                                    <span id="prob-percentage" class="prob-num">--%</span>
+                                    <span class="prob-label">PROBABILITY</span>
+                                </div>
+                            </div>
+
+                            <div class="verdict-info">
+                                <div id="verdict-badge" class="verdict-pill neutral">Ready to Verify</div>
+                                <div id="verdict-title" class="submitted-title-display">Enter a title to begin verification</div>
+                                <div id="verdict-summary" class="verdict-desc">The multi-stage pipeline tests anchor distinctiveness, PRGI guideline blacklists, Frankentitle combinations, and tri-vector similarity.</div>
+                            </div>
+                        </div>
+
+                        <!-- 5-Stage Funnel Visualizer -->
+                        <div class="funnel-container">
+                            <div class="funnel-step" id="step-1">
+                                <div class="step-icon"><i data-lucide="split"></i></div>
+                                <div class="step-details">
+                                    <div class="step-name">Stage 1: Pre-processing & Anchor Word</div>
+                                    <div class="step-sub" id="step-1-sub">Extracts anchor and strips generic modifiers</div>
+                                </div>
+                                <div class="step-status" id="step-1-status"><i data-lucide="circle-dashed"></i></div>
+                            </div>
+
+                            <div class="funnel-step" id="step-2">
+                                <div class="step-icon"><i data-lucide="shield-alert"></i></div>
+                                <div class="step-details">
+                                    <div class="step-name">Stage 2: Guideline Enforcement (Blacklists)</div>
+                                    <div class="step-sub" id="step-2-sub">Disallowed words, Emblems Act, Police/CBI terms</div>
+                                </div>
+                                <div class="step-status" id="step-2-status"><i data-lucide="circle-dashed"></i></div>
+                            </div>
+
+                            <div class="funnel-step" id="step-3">
+                                <div class="step-icon"><i data-lucide="git-merge"></i></div>
+                                <div class="step-details">
+                                    <div class="step-name">Stage 3: 'Frankentitle' Combination Check</div>
+                                    <div class="step-sub" id="step-3-sub">Aho-Corasick compound title detection</div>
+                                </div>
+                                <div class="step-status" id="step-3-status"><i data-lucide="circle-dashed"></i></div>
+                            </div>
+
+                            <div class="funnel-step" id="step-4">
+                                <div class="step-icon"><i data-lucide="activity"></i></div>
+                                <div class="step-details">
+                                    <div class="step-name">Stage 4: Tri-Vector Similarity Core</div>
+                                    <div class="step-sub" id="step-4-sub">Phonetic, Orthographic & Cross-Lingual Semantic</div>
+                                </div>
+                                <div class="step-status" id="step-4-status"><i data-lucide="circle-dashed"></i></div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 4 Vector Scores Bar breakdown -->
+                        <div id="vector-scores-card" class="vector-scores-card hidden">
+                            <div class="vector-score-item">
+                                <div class="vs-header">
+                                    <span><i data-lucide="volume-2"></i> 4A: Phonetic (Double Metaphone + Indic)</span>
+                                    <strong id="phonetic-score-val">0%</strong>
+                                </div>
+                                <div class="progress-bar-bg"><div id="phonetic-bar" class="progress-bar-fill" style="width: 0%;"></div></div>
+                            </div>
+
+                            <div class="vector-score-item">
+                                <div class="vs-header">
+                                    <span><i data-lucide="spell-check"></i> 4B: Orthographic (Levenshtein / Jaro-Winkler)</span>
+                                    <strong id="ortho-score-val">0%</strong>
+                                </div>
+                                <div class="progress-bar-bg"><div id="ortho-bar" class="progress-bar-fill" style="width: 0%;"></div></div>
+                            </div>
+
+                            <div class="vector-score-item">
+                                <div class="vs-header">
+                                    <span><i data-lucide="globe"></i> 4C: Cross-Lingual Semantic (Embeddings & Lexicon)</span>
+                                    <strong id="semantic-score-val">0%</strong>
+                                </div>
+                                <div class="progress-bar-bg"><div id="semantic-bar" class="progress-bar-fill" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Diagnostic Reasons -->
+                        <div id="reasons-container" class="reasons-container hidden">
+                            <div class="section-subtitle"><i data-lucide="alert-triangle"></i> Diagnostic Findings & Guidelines</div>
+                            <div id="reasons-list" class="reasons-list"></div>
+                        </div>
+
+                        <!-- Top Similar Matches Table -->
+                        <div id="matches-container" class="matches-container hidden">
+                            <div class="section-subtitle"><i data-lucide="copy"></i> Top Matching Registered Titles in Database</div>
+                            <div class="table-wrapper">
+                                <table class="custom-table" id="matches-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Registered Title</th>
+                                            <th>Similarity</th>
+                                            <th>Phonetic</th>
+                                            <th>Orthographic</th>
+                                            <th>Semantic</th>
+                                            <th>Reg. No / State</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="matches-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations & Next Actions -->
+                        <div id="suggestions-container" class="suggestions-container hidden">
+                            <div class="section-subtitle"><i data-lucide="lightbulb"></i> PRGI Actionable Recommendations</div>
+                            <ul id="suggestions-list" class="suggestions-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ========================================================= -->
+            <!-- TAB 2: Batch Title Screening -->
+            <!-- ========================================================= -->
+            <section id="batch-tab" class="tab-content">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <div class="card-title"><i data-lucide="layers"></i> High-Throughput Batch Title Verification</div>
+                        <span class="pill-info">Screen Hundreds of Titles Simultaneously</span>
+                    </div>
+
+                    <div class="batch-grid">
+                        <div class="batch-input-col">
+                            <label for="batch-textarea">Enter Titles (One title per line):</label>
+                            <textarea id="batch-textarea" rows="8" placeholder="The Crime Investigation Daily&#10;The Daily Mumbai Express&#10;The Daily News&#10;Hindu Indian Express&#10;Namascar India&#10;Daily Evening&#10;Astra Quantum Aerospace Journal"></textarea>
+                            
+                            <div class="batch-actions">
+                                <button id="batch-run-btn" class="btn btn-primary"><i data-lucide="play"></i> Run Batch Screen</button>
+                                <button id="batch-sample-btn" class="btn btn-secondary"><i data-lucide="file-plus"></i> Load Benchmark Sample</button>
+                                <button id="batch-export-btn" class="btn btn-secondary" disabled><i data-lucide="download"></i> Export CSV Report</button>
+                            </div>
+                        </div>
+
+                        <div class="batch-stats-col">
+                            <div class="stat-card">
+                                <div class="stat-num" id="stat-total">0</div>
+                                <div class="stat-label">Total Processed</div>
+                            </div>
+                            <div class="stat-card approved">
+                                <div class="stat-num" id="stat-approved">0</div>
+                                <div class="stat-label">Approved (>=70%)</div>
+                            </div>
+                            <div class="stat-card rejected">
+                                <div class="stat-num" id="stat-rejected">0</div>
+                                <div class="stat-label">Rejected (&lt;40%)</div>
+                            </div>
+                            <div class="stat-card review">
+                                <div class="stat-num" id="stat-review">0</div>
+                                <div class="stat-label">Review Needed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper batch-table-wrap">
+                        <table class="custom-table" id="batch-results-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Submitted Title</th>
+                                    <th>Probability</th>
+                                    <th>Status</th>
+                                    <th>Triggered Stage / Rule</th>
+                                    <th>Primary Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batch-results-tbody">
+                                <tr><td colspan="6" class="text-center text-muted">No batch data loaded. Click 'Run Batch Screen' to analyze.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ========================================================= -->
+            <!-- TAB 3: Pending Applications & Lock Simulator -->
+            <!-- ========================================================= -->
+            <section id="lock-tab" class="tab-content">
+                <div class="lock-grid">
+                    <div class="card glass-card">
+                        <div class="card-header">
+                            <div class="card-title"><i data-lucide="lock"></i> Concurrency Lock Collision Simulator</div>
+                            <span class="pill-info">Redis TTL Architecture Demo</span>
+                        </div>
+                        <p class="section-desc">
+                            Demonstrates how PRGI prevents race conditions. When User A files for a title, it is locked in Redis with a 10-minute TTL. If User B attempts to apply 5 minutes later, User B is immediately rejected.
+                        </p>
+
+                        <div class="sim-flow-box">
+                            <div class="sim-actor">
+                                <div class="actor-header"><i data-lucide="user-check"></i> User A (First Applicant)</div>
+                                <div class="input-group">
+                                    <input type="text" id="sim-title-a" value="Sunrise Orbit Chronicle" placeholder="Title for User A">
+                                </div>
+                                <button id="sim-user-a-btn" class="btn btn-success"><i data-lucide="send"></i> User A Applies (Acquire Lock)</button>
+                                <div id="sim-res-a" class="sim-result-box">Awaiting submission...</div>
+                            </div>
+
+                            <div class="sim-divider">
+                                <i data-lucide="arrow-right"></i>
+                                <span>5 Mins Later</span>
+                            </div>
+
+                            <div class="sim-actor">
+                                <div class="actor-header"><i data-lucide="user-x"></i> User B (Second Applicant)</div>
+                                <div class="input-group">
+                                    <input type="text" id="sim-title-b" value="Sunrise Orbit Chronicle" placeholder="Title for User B">
+                                </div>
+                                <button id="sim-user-b-btn" class="btn btn-danger"><i data-lucide="alert-octagon"></i> User B Attempts Application</button>
+                                <div id="sim-res-b" class="sim-result-box">Awaiting User B attempt...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card">
+                        <div class="card-header">
+                            <div class="card-title"><i data-lucide="clock"></i> Active Pending Application Locks in Redis Cache</div>
+                            <button id="refresh-locks-btn" class="btn btn-sm btn-secondary"><i data-lucide="refresh-cw"></i> Refresh</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="custom-table" id="locks-table">
+                                <thead>
+                                    <tr>
+                                        <th>Locked Title</th>
+                                        <th>Applicant ID</th>
+                                        <th>Applicant Name</th>
+                                        <th>TTL Remaining</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="locks-tbody">
+                                    <tr><td colspan="5" class="text-center text-muted">No active locks in cache.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ========================================================= -->
+            <!-- TAB 4: PRGI Rulebook & Disallowed Catalogue -->
+            <!-- ========================================================= -->
+            <section id="rules-tab" class="tab-content">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <div class="card-title"><i data-lucide="book-open"></i> PRGI Statutory Guidelines & Prohibited Word Blacklists</div>
+                        <span class="pill-info">Press and Registration of Periodicals (PRP) Act, 2023</span>
+                    </div>
+
+                    <div class="rules-grid" id="rules-cards-container">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ========================================================= -->
+            <!-- TAB 5: Registry Database Explorer (160,000+ Master Database) -->
+            <!-- ========================================================= -->
+            <section id="db-tab" class="tab-content">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <div class="card-title"><i data-lucide="database"></i> Registered Titles Master Registry (160k+ Dataset)</div>
+                        <span class="pill-info">Sub-Second Search</span>
+                    </div>
+
+                    <div class="db-search-bar">
+                        <div class="input-wrapper flex-1">
+                            <i data-lucide="search" class="input-icon"></i>
+                            <input type="text" id="db-search-input" placeholder="Search by title, anchor word, registration number, or state...">
+                        </div>
+                        <button id="db-search-btn" class="btn btn-primary"><i data-lucide="search"></i> Search Registry</button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="custom-table" id="registry-table">
+                            <thead>
+                                <tr>
+                                    <th># ID</th>
+                                    <th>Registered Title</th>
+                                    <th>Distinct Anchor</th>
+                                    <th>Registration No.</th>
+                                    <th>Language</th>
+                                    <th>State / UT</th>
+                                    <th>Periodicity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registry-tbody">
+                                <tr><td colspan="7" class="text-center text-muted">Loading registry dataset...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span>Press Registrar General of India (PRGI) Title Verification Subsystem &bull; Autonomous Architecture</span>
+            </div>
+            <div class="footer-right">
+                <span>FastAPI &bull; Double Metaphone &bull; Indic-Soundex &bull; Aho-Corasick &bull; Multilingual Vectors</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Application JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
