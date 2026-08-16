@@ -115,6 +115,10 @@ class TitleVerificationEngine:
             elif error_type == "PURE_NUMERIC":
                 suggestions.append("Combine numerical digits with substantive distinctive alphabetical words (e.g. 'Channel 24', 'Studio 365').")
                 suggestions.append("Do not submit publication titles consisting exclusively of numbers or digits.")
+            elif error_type in ("REPETITIVE_GIBBERISH", "UNPRONOUNCEABLE_GIBBERISH", "LOW_ENTROPY_GIBBERISH"):
+                suggestions.append("Ensure all words in the title are meaningful and pronounceable in English or recognized Indian languages.")
+                suggestions.append("Avoid random key mashing or unpronounceable character combinations (e.g. 'ghibrisg', 'qwrtp').")
+                suggestions.append("If using an acronym, use standard, recognized abbreviations (e.g. 'BBC', 'NDTV', 'ISRO').")
             else:
                 suggestions.append("Ensure the title contains valid text characters.")
 
