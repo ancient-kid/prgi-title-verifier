@@ -265,42 +265,135 @@ def get_guidelines():
     return {
         "guidelines": [
             {
-                "guideline_ref": "Guideline 12",
-                "title": "Disallowed Law Enforcement & State Organ Words",
-                "description": "Prohibits words implying official authority, police, military, courts, or vigilance bodies.",
-                "examples": ["Police", "Crime", "CBI", "CID", "Army", "Vigilance", "Sarkar", "Court"]
+                "guideline_ref": "Guideline 1",
+                "category": "Distinctiveness & Root Words",
+                "title": "Generic or Root Word Titles Prohibited",
+                "description": "The proposed titles should preferably contain more than one word formed by combining distinct and meaningful terms. Generic, or root word titles shall not be registered. Generic or Root words are those words which cannot be broken down further.",
+                "examples": ["Manthan", "Darpan", "Inspire", "Success", "Khulasa", "Rahasya", "Katha", "Herald", "Malar", "Mukhi", "Nukkad"]
+            },
+            {
+                "guideline_ref": "Guideline 2",
+                "category": "Phonetic & Visual Uniqueness",
+                "title": "Phonetic and Visual Deceptive Similarity",
+                "description": "The proposed titles must be unique and shall not be phonetically or visually similar to any existing registered title whether in the same language across India or any other language within the same State.",
+                "examples": ["Namascar vs Namaskar", "Daineq vs Dainik", "Same state cross-language resemblance"]
+            },
+            {
+                "guideline_ref": "Guideline 3",
+                "category": "Public Decency & Morality",
+                "title": "Negative Connotations, Obscene & Crime Terms",
+                "description": "Titles should be meaningful and clear. Titles with negative connotations with religious sentiments, obscene, absurd or offensive to public sentiments or those that could be misused with words like 'crime', 'corruption' etc. will not be registered.",
+                "examples": ["Crime", "Corruption", "Scam", "Extortion", "Vulgar / Obscene words", "Offensive religious terms"]
             },
             {
                 "guideline_ref": "Guideline 4",
-                "title": "National Emblems & Protected Names Act 1950",
-                "description": "Prohibits national symbols, civilian honors, constitutional offices, and UN organizations.",
-                "examples": ["Ashoka Chakra", "National Emblem", "Bharat Ratna", "President", "United Nations"]
-            },
-            {
-                "guideline_ref": "Guideline 8",
-                "title": "Distinctive Anchor Words Requirement",
-                "description": "Rejects titles consisting entirely of generic periodicities and modifiers with no distinctive anchor.",
-                "examples": ["The Daily News", "Weekly Express", "Dainik Samachar"]
-            },
-            {
-                "guideline_ref": "Guideline 6",
-                "title": "Combination Titles ('Frankentitle' Rule)",
-                "description": "Rejects titles that concatenate two or more already registered titles.",
-                "examples": ["Hindu Indian Express", "Dainik Jagran Kesari"]
+                "category": "Acronyms & Numerals",
+                "title": "Abbreviations, Acronyms and Numerals Requirement",
+                "description": "Abbreviations, acronyms or numerals will be considered only if they are meaningfully and appropriately attached with other words. Standalone or arbitrary abbreviations/numbers are not permitted.",
+                "examples": ["999", "XYZ", "24x7 standalone", "Meaningful combination required (e.g. 'Mission 2047 Express')"]
             },
             {
                 "guideline_ref": "Guideline 5",
-                "title": "Phonetic & Orthographic Similarity",
-                "description": "Bars titles with deceptive auditory or visual similarity to existing registered titles.",
-                "examples": ["Namascar India vs Namaskar India", "Daineq vs Dainik"]
+                "category": "Combination Titles",
+                "title": "Combination or Rearrangement of Registered Titles",
+                "description": "Titles that combine existing registered titles whether in full, in part or by rearranging words or inserting non-distinctive terms that do not create a significantly different title will not be registered.",
+                "examples": ["Hindu Indian Express", "Dainik Jagran Kesari", "Times of India Herald"]
+            },
+            {
+                "guideline_ref": "Guideline 6",
+                "category": "Personal Names",
+                "title": "Individual Names of Owner or Publisher Prohibited",
+                "description": "Titles denoting the name of an individual should not be the names of the owner or publisher of the proposed periodical to avoid misleading personal attribution.",
+                "examples": ["Rajan Times (if owner is Rajan)", "Deepak Samachar (if owner is Deepak)", "Jitendra News"]
+            },
+            {
+                "guideline_ref": "Guideline 7",
+                "category": "Special Characters",
+                "title": "Signs, Symbols, Emojis and Non-Text Characters",
+                "description": "Titles containing non-text characters, or any form of signs, symbols including mathematical symbols (like '+', '*', etc.), pictographs, photographs, hallmarks, logos, monograms, phonograms, emojis, etc. will not be registered.",
+                "examples": ["News+Times", "Bharat*Post", "24/7 Daily", "Emojis & pictographs", "Logos / Monograms"]
+            },
+            {
+                "guideline_ref": "Guideline 8",
+                "category": "Generic Modifiers",
+                "title": "Insignificant Prefixes, Suffixes & Generic Modifiers",
+                "description": "Titles formed by insignificantly prefixing or suffixing generic or repetitive terms to an existing title—such as addition names of cities or states, periodicity or language, or addition of articles (A, An, The) prepositions or adjectives to an already existing title—will not be approved.",
+                "examples": ["The Times", "Daily Dainik News", "Saptahik Weekly", "Sandhya Evening", "Mumbai Express (if Express registered)"]
+            },
+            {
+                "guideline_ref": "Guideline 9",
+                "category": "Legal & Judicial",
+                "title": "Judicial Pronouncements, Copyright, Trademark & Defamation",
+                "description": "The proposed title shall not be registered if it is found to be in violation of any judicial pronouncement including matters involving copyright, trademark infringement, contempt of court and defamation.",
+                "examples": ["Trademarked Brand Clones", "Judicially Restrained Names", "Contemptuous Titles", "Defamatory Labels"]
+            },
+            {
+                "guideline_ref": "Guideline 10",
+                "category": "National Security",
+                "title": "Sovereignty, Integrity of India & Public Order",
+                "description": "Titles containing words which can be construed as affecting the sovereignty and integrity of India, Security of the State, International Relations, Public order, Morality and public decency, incite unrest or disorder etc. will not be registered.",
+                "examples": ["Secessionist Terms", "Insurrection / Riot Incitement", "Hostile International Terms", "Public Disorder"]
             },
             {
                 "guideline_ref": "Guideline 11",
-                "title": "Cross-Lingual Semantic Equivalence",
-                "description": "Restricts direct translated copies of registered titles across Indian languages.",
-                "examples": ["Daily Evening (English) vs Pratidin Sandhya (Hindi/Bengali)"]
+                "category": "Emblems Act Compliance",
+                "title": "National Symbols, Emblems & Emblems Act 1950",
+                "description": "Titles similar to any national symbol, national motto, or suggesting misleading association with Central Government/State Governments/Local bodies/Constitutional bodies/Statutory bodies or are violative of 'The Emblems and Names (Prevention of Improper Use) Act, 1950' or any other law in force will not be registered.",
+                "examples": ["Ashoka Chakra", "National Emblem", "Bharat Ratna", "President", "Satyameva Jayate", "United Nations"]
+            },
+            {
+                "guideline_ref": "Guideline 12",
+                "category": "Official Authority Blacklist",
+                "title": "Government Organs, Regulatory Agencies & Public Schemes",
+                "description": "Titles containing names of Government Organizations/ Departments, Regulatory/Enforcement Agencies (such as 'Police', 'Bureau', 'Investigation Department', 'Vigilance', 'CID', 'CBI', Commission, Defence Establishment, etc.), Foreign Governments, International Organizations (e.g., UN, WHO, ILO) in any language, or words like Sarkar, Government, Parliament etc. or title containing the names of public welfare schemes of Central/State Governments or its organizations or local bodies which suggest a misleading association with them shall not be registered.",
+                "examples": ["Police", "Crime Bureau", "CID", "CBI", "Army", "Vigilance", "Sarkar", "Government", "Parliament", "Public Schemes"]
+            },
+            {
+                "guideline_ref": "Guideline 13",
+                "category": "Foreign Association",
+                "title": "Misleading Foreign Country or City Association",
+                "description": "Titles suggesting any association with a foreign country, city, or place which does not correspond to the State or place of publication of the periodical shall not be registered.",
+                "examples": ["South Africa Times", "Canada Times", "New York Mirror", "London Chronicle (published in India)"]
+            },
+            {
+                "guideline_ref": "Guideline 14",
+                "category": "National Dignitaries",
+                "title": "Names of Prominent National Leaders & Heads of Government",
+                "description": "Titles with the names of national leaders or those resembling the names of prominent national leaders, Heads of Government, and functionaries of Central and State governments will not be registered. However, names of recognized national and state political parties will be considered if applied by the concerned organization.",
+                "examples": ["Mahatma Gandhi Times", "Prime Minister Gazette", "Chief Minister Post", "Governor Herald"]
+            },
+            {
+                "guideline_ref": "Guideline 15",
+                "category": "Broadcast Media",
+                "title": "Satellite TV Channels, FM Radio & Broadcast Names (MIB)",
+                "description": "Title registered as a Satellite TV Channel/FM Radio/Community Radio Station with the Ministry of Information and Broadcasting shall not be registered unless the application is made by their owner or by their representative on his behalf.",
+                "examples": ["News Nation", "News Time", "Aajtak News", "Akaashvani Times", "Dabang News"]
+            },
+            {
+                "guideline_ref": "Guideline 16",
+                "category": "Well-Known Periodicals",
+                "title": "Protection of Well-Known Periodicals",
+                "description": "Titles resembling the titles of well-known periodicals if applied by anyone other than the existing owner of the well-known title shall not be registered. This is to avoid any false/misleading impression of association with the well-known periodical.",
+                "examples": ["India Today Lookalikes", "Time Magazine Clones", "Reader's Digest Imitations", "Famous Journal Clones"]
+            },
+            {
+                "guideline_ref": "Guideline 17",
+                "category": "Commercial & Non-Periodical",
+                "title": "Advertisements, Classifieds, Tenders & Directories",
+                "description": "Titles using words like Ad or Advertisement, Classifieds, Tender, Calendar, Panchang, Matrimonial, Yellow pages (generally prefixed with white, pink, etc.), pamphlet, brochure, directory, or any such publication which cannot be treated as a periodical shall not be registered.",
+                "examples": ["Ad Express", "Classifieds Weekly", "Tender Gazette", "Panchang Patrika", "Yellow Pages Directory", "Matrimonial News"]
+            },
+            {
+                "guideline_ref": "Guideline 18",
+                "category": "Ownership & Editions",
+                "title": "Transfer of Ownership & New Edition Restrictions",
+                "description": "Registration of new editions and transfer of ownership of an existing periodical with a title falling in the categories specified under points 3 and 9 to 13 of these guidelines will not be considered.",
+                "examples": ["Edition expansion blocked for restricted words", "Transfer barred for non-compliant legacy titles", "Strict adherence to Guidelines 3 & 9–13"]
             }
         ],
+        "total_guidelines_count": 18,
+        "effective_date": "01.07.2025",
+        "act_reference": "Section 5(3)(C) read with Section 2(g) of the Press and Registration of Periodicals Act 2023",
         "disallowed_words_count": len(DISALLOWED_ENFORCEMENT_WORDS) + len(NATIONAL_EMBLEMS_AND_PROTECTED_NAMES),
         "generic_words_count": len(GENERIC_MODIFIERS)
     }
