@@ -1,5 +1,6 @@
 """
-PRGI Title Verification System - High-Performance FastAPI Application
+PRGI Title Verification REST API Server
+Updated: 2026-08-17 (Suggester Matrix Active)
 """
 
 import os

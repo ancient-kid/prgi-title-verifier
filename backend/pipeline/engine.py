@@ -47,13 +47,39 @@ class TitleVerificationEngine:
         all_anchors = set(titles_index.get_all_anchors())
         self.frankentitle_detector.load_titles(all_titles, all_anchors)
 
+    def _get_ai_suggestions(
+        self,
+        raw_title: str,
+        anchor_words: str,
+        language: Optional[str],
+        state: Optional[str],
+        periodicity: Optional[str],
+        skip_suggestions: bool
+    ) -> List[Dict[str, Any]]:
+        if skip_suggestions:
+            return []
+        try:
+            from backend.pipeline.title_suggester import generate_title_suggestions
+            return generate_title_suggestions(
+                raw_title=raw_title,
+                anchor_words=anchor_words,
+                language=language or "English",
+                state=state or "National",
+                periodicity=periodicity or "Daily",
+                engine_instance=self
+            )
+        except Exception as e:
+            print(f"[Engine] AI Suggester error: {e}")
+            return []
+
     def verify_title(
         self,
         raw_title: str,
         language: Optional[str] = None,
         state: Optional[str] = None,
         periodicity: Optional[str] = None,
-        applicant_id: Optional[str] = None
+        applicant_id: Optional[str] = None,
+        skip_suggestions: bool = False
     ) -> Dict[str, Any]:
         """
         Execute full multi-stage verification pipeline for a submitted title.
@@ -93,7 +119,8 @@ class TitleVerificationEngine:
                     "suggestions": [
                         f"Choose an alternate distinctive prefix or suffix for '{raw_title}'.",
                         "Wait for the active application lock window to expire if unconfirmed."
-                    ]
+                    ],
+                    "ai_suggestions": self._get_ai_suggestions(raw_title, raw_title, language, state, periodicity, skip_suggestions)
                 }
 
         # Stage 1: Preprocessing, Structural Validation & Anchor Extraction
@@ -291,7 +318,8 @@ class TitleVerificationEngine:
                 "suggestions": [
                     "Remove prohibited security/enforcement terms (e.g. 'Police', 'Crime', 'CBI', 'Sarkar').",
                     "Ensure title does not falsely claim government, statutory, or judicial authority."
-                ]
+                ],
+                "ai_suggestions": self._get_ai_suggestions(raw_title, anchor_words, language, state, periodicity, skip_suggestions)
             }
 
         # Stage 3: The Frankentitle Check
@@ -323,7 +351,8 @@ class TitleVerificationEngine:
                 "suggestions": [
                     f"Create an original title rather than combining '{' + '.join(s3_res['components'])}'.",
                     "Do not join established publication names together."
-                ]
+                ],
+                "ai_suggestions": self._get_ai_suggestions(raw_title, anchor_words, language, state, periodicity, skip_suggestions)
             }
 
         # Stage 4: Similarity Checks across the 160k+ dataset
@@ -477,11 +506,26 @@ class TitleVerificationEngine:
             })
 
         suggestions = []
+        ai_suggestions = []
         if status != "Approved":
             base_anchor = anchor_words if anchor_words else cleaned_title
             suggestions.append(f"Consider prefixing a regional identifier, e.g., 'Maharashtra {raw_title.title()}'.")
             suggestions.append(f"Modify the distinctive keyword to be unique from '{top_matches[0]['title'] if top_matches else ''}'.")
             suggestions.append("Ensure periodicity modifiers do not mimic registered brands.")
+            
+            if not skip_suggestions:
+                try:
+                    from backend.pipeline.title_suggester import generate_title_suggestions
+                    ai_suggestions = generate_title_suggestions(
+                        raw_title=raw_title,
+                        anchor_words=anchor_words,
+                        language=language or "English",
+                        state=state or "National",
+                        periodicity=periodicity or "Daily",
+                        engine_instance=self
+                    )
+                except Exception as e:
+                    print(f"[Engine] AI Title Suggester error: {e}")
         else:
             suggestions.append("Title meets PRGI uniqueness standards and is eligible for formal application filing.")
 
@@ -512,5 +556,6 @@ class TitleVerificationEngine:
                     "top_matches": top_matches
                 }
             },
-            "suggestions": suggestions
+            "suggestions": suggestions,
+            "ai_suggestions": ai_suggestions
         }
