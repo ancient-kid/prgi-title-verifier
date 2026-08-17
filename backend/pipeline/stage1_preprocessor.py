@@ -15,6 +15,8 @@ import re
 import unicodedata
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from backend.pipeline.gibberish_detector import validate_title_meaningfulness
+
 # Pure generic periodicities and non-distinctive modifier words
 PURE_GENERIC_WORDS: Set[str] = {
     # English Periodicities & Generics
@@ -122,7 +124,19 @@ def validate_title_structure(raw_title: str) -> Dict[str, Any]:
             ),
             "prohibited_symbols": []
         }
-        
+
+    # Check meaningfulness & gibberish (Shannon Entropy, N-Gram, Phonetic cluster rules)
+    meaning_check = validate_title_meaningfulness(raw_title)
+    if not meaning_check["valid"]:
+        return {
+            "valid": False,
+            "error_type": meaning_check["error_type"],
+            "rule": meaning_check["rule"],
+            "guideline_ref": meaning_check["guideline_ref"],
+            "reason": meaning_check["reason"],
+            "prohibited_symbols": []
+        }
+
     return {
         "valid": True,
         "error_type": None,
