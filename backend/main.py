@@ -231,9 +231,13 @@ def list_active_locks():
 
 
 @app.post("/api/locks/release")
-def release_lock(title: str = Query(...), applicant_id: str = Query(...)):
+def release_lock(title: str = Query(...), applicant_id: Optional[str] = Query(None)):
     """Release an active pending title lock."""
-    released = lock_manager.release_lock(title=title, applicant_id=applicant_id)
+    if not applicant_id:
+        is_locked, lock_info = lock_manager.check_lock(title)
+        if is_locked and lock_info:
+            applicant_id = lock_info.get("applicant_id")
+    released = lock_manager.release_lock(title=title, applicant_id=applicant_id or "")
     return {"success": released, "title": title}
 
 
@@ -414,11 +418,18 @@ def get_guidelines():
 # -------------------------------------------------------------
 # Static Files & Web UI Serving
 # -------------------------------------------------------------
-if FRONTEND_DIR.exists():
+FRONTEND_NEXT_OUT = BASE_DIR / "frontend-next" / "out"
+
+if FRONTEND_NEXT_OUT.exists():
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_NEXT_OUT)), name="static")
+elif FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 @app.get("/")
 def serve_index():
+    index_next = FRONTEND_NEXT_OUT / "index.html"
+    if index_next.exists():
+        return FileResponse(str(index_next))
     index_path = FRONTEND_DIR / "index.html"
     if index_path.exists():
         return FileResponse(str(index_path))

@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F4F2E9;
+    --card-bg: #F7F2E8;
+    --card-border: #E3DAC7;
+    --text-main: #1A202C;
+    --text-muted: #64748B;
+    --primary-green: #1E7B62;
+    --primary-green-hover: #166552;
+    --primary-green-light: #D5EDE3;
+    --crimson-red: #C53030;
+    --crimson-red-light: #FED7D7;
+    --navy-blue: #1A365D;
+    --chip-bg: #E8ECEF;
+    --chip-text: #2D3748;
+    --pill-inactive-bg: #E2DDD0;
+    --pill-inactive-text: #4A5568;
+    --input-bg: #FFFFFF;
+    --input-border: #E2D9C5;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F4F2E9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Glass & Card Styling */
+.parchment-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+}
+
+.input-field {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  border-radius: 10px;
+  padding: 0.625rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(30, 123, 98, 0.15);
+}
+
+.btn-emerald {
+  background-color: var(--primary-green);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.65rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.btn-emerald:hover {
+  background-color: var(--primary-green-hover);
+  box-shadow: 0 4px 12px rgba(30, 123, 98, 0.25);
+}
+
+.btn-emerald-outline {
+  background-color: #F7F2E8;
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.65rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.btn-emerald-outline:hover {
+  background-color: var(--primary-green-light);
+}
+
+/* Custom Gauge Animations */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.badge-crimson {
+  background-color: var(--crimson-red);
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.badge-approved {
+  background-color: var(--primary-green);
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.badge-review {
+  background-color: #D69E2E;
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
