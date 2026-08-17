@@ -21,13 +21,14 @@ import {
   Lightbulb
 } from "lucide-react";
 
-export default function VerificationStudio() {
+export default function VerificationStudio({ setActiveTab }) {
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("English");
   const [periodicity, setPeriodicity] = useState("Daily");
   const [stateUt, setStateUt] = useState("National");
 
   const [loading, setLoading] = useState(false);
+  const [submittingLock, setSubmittingLock] = useState(false);
   const [result, setResult] = useState(null);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(true);
 
@@ -65,6 +66,41 @@ export default function VerificationStudio() {
       console.error("Verification error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmitAndLock = async () => {
+    if (!result || isRejected) return;
+    setSubmittingLock(true);
+    try {
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: result.raw_title || title,
+          applicant_id: "User_A_9918",
+          applicant_name: "Applicant (Verification Studio)",
+          language,
+          state: stateUt,
+          periodicity,
+          ttl_seconds: 600
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (setActiveTab) {
+          setActiveTab("lock");
+        }
+      } else {
+        alert(`Lock Submission: ${data.message || "Could not acquire lock."}`);
+        if (setActiveTab) {
+          setActiveTab("lock");
+        }
+      }
+    } catch (err) {
+      console.error("Lock error:", err);
+    } finally {
+      setSubmittingLock(false);
     }
   };
 
@@ -265,13 +301,14 @@ export default function VerificationStudio() {
             <span>{loading ? "Verifying..." : "Verify Title Now"}</span>
           </button>
           <button
-            disabled={!result || isRejected}
+            onClick={handleSubmitAndLock}
+            disabled={!result || isRejected || submittingLock}
             className={`btn-emerald-outline flex items-center justify-center gap-2 text-sm ${
-              !result || isRejected ? "opacity-50 cursor-not-allowed" : ""
+              !result || isRejected ? "opacity-50 cursor-not-allowed" : "hover:bg-[#1E7B62] hover:text-white cursor-pointer"
             }`}
           >
             <Lock className="w-4 h-4" />
-            <span>Submit & Lock Title</span>
+            <span>{submittingLock ? "Locking Title..." : "Submit & Lock Title"}</span>
           </button>
         </div>
 

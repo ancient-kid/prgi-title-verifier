@@ -18,7 +18,7 @@ export default function Home() {
 
       {/* Tab Views */}
       <main className="flex-1">
-        {activeTab === "studio" && <VerificationStudio />}
+        {activeTab === "studio" && <VerificationStudio setActiveTab={setActiveTab} />}
         {activeTab === "batch" && <BatchScreening />}
         {activeTab === "lock" && <LockSimulator />}
         {activeTab === "rules" && <PRGIRulebook />}
