@@ -15,22 +15,22 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Indic phonetic transliteration character normalization table
 INDIC_PHONETIC_MAP = [
-    (r"sh[h]?", "SH"),
-    (r"ch[h]?", "CH"),
-    (r"kh", "K"),
-    (r"gh", "G"),
-    (r"th", "T"),
-    (r"dh", "D"),
-    (r"bh", "B"),
-    (r"ph", "F"),
+    (r"sh[h]?", "s"),
+    (r"ch[h]?", "c"),
+    (r"kh", "k"),
+    (r"gh", "g"),
+    (r"th", "t"),
+    (r"dh", "d"),
+    (r"bh", "b"),
+    (r"ph", "f"),
     (r"ee|oo|aa|ii|uu", lambda m: m.group(0)[0]),
-    (r"v", "W"),
-    (r"w", "W"),
-    (r"q", "K"),
-    (r"c(?=[eiy])", "S"),
-    (r"c", "K"),
-    (r"z", "J"),
-    (r"x", "KS")
+    (r"v", "w"),
+    (r"w", "w"),
+    (r"q", "k"),
+    (r"c(?=[eiy])", "s"),
+    (r"c", "k"),
+    (r"z", "j"),
+    (r"x", "ks")
 ]
 
 
@@ -47,7 +47,7 @@ def indic_soundex(word: str) -> str:
         if callable(replacement):
             s = re.sub(pattern, replacement, s)
         else:
-            s = re.sub(pattern, replacement.lower(), s)
+            s = re.sub(pattern, replacement, s)
             
     s = re.sub(r"[^a-z]", "", s)
     if not s:
@@ -140,9 +140,10 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
         return 1.0
         
     try:
-        from rapidfuzz.distance import JaroWinkler
+        from rapidfuzz.distance import JaroWinkler, Levenshtein
     except Exception:
         JaroWinkler = None
+        Levenshtein = None
 
     m1 = [get_double_metaphone(w)[0] for w in w1]
     m2 = [get_double_metaphone(w)[0] for w in w2]
@@ -155,9 +156,17 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
     m2_str = " ".join([m for m in m2 if m])
     if m1_str and m1_str == m2_str:
         char_sim = JaroWinkler.similarity(" ".join(w1), " ".join(w2)) if JaroWinkler else 0.8
-        if char_sim >= 0.70:
+        lev_sim = Levenshtein.normalized_similarity(" ".join(w1), " ".join(w2)) if Levenshtein else 0.8
+        
+        # For short strings (<= 4 chars), require high character similarity (>= 0.85)
+        # to avoid equating minimal vowel pairs like bat/bet, pan/pin, car/care
+        if max(len(" ".join(w1)), len(" ".join(w2))) <= 4:
+            if char_sim >= 0.85 or lev_sim >= 0.80:
+                return 1.0
+            else:
+                return round(max(char_sim, lev_sim) * 0.5, 4)
+        elif char_sim >= 0.70:
             return 1.0
-
 
     # Token-level bipartite alignment matching
     used_indices = set()
@@ -178,28 +187,37 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
             tok_s2 = s2[j]
             
             score = 0.0
+            word_len = max(len(w1[i]), len(w2[j]))
+            char_sim = JaroWinkler.similarity(w1[i], w2[j]) if JaroWinkler else 0.8
+            lev_sim = Levenshtein.normalized_similarity(w1[i], w2[j]) if Levenshtein else 0.8
             
             # Exact metaphone match
             if tok_m1 and tok_m2 and tok_m1 == tok_m2:
-                char_sim = JaroWinkler.similarity(w1[i], w2[j]) if JaroWinkler else 0.8
-                if char_sim >= 0.70:
+                if word_len <= 4:
+                    if char_sim >= 0.85 or lev_sim >= 0.80:
+                        score = 1.0
+                    else:
+                        score = 0.35
+                elif char_sim >= 0.70:
                     score = 1.0
                 else:
                     score = 0.50
             # Exact Indic soundex match
             elif tok_s1 and tok_s2 and tok_s1 == tok_s2:
-                char_sim = JaroWinkler.similarity(w1[i], w2[j]) if JaroWinkler else 0.8
-                if char_sim >= 0.70:
+                if word_len <= 4:
+                    if char_sim >= 0.85 or lev_sim >= 0.80:
+                        score = 0.95
+                    else:
+                        score = 0.30
+                elif char_sim >= 0.70:
                     score = 0.95
                 else:
                     score = 0.40
-            elif JaroWinkler:
-                sim_m = JaroWinkler.similarity(tok_m1, tok_m2) if tok_m1 and tok_m2 else 0.0
-                sim_s = JaroWinkler.similarity(tok_s1, tok_s2) if tok_s1 and tok_s2 else 0.0
-                max_sim = max(sim_m, sim_s)
-                # Only consider high similarity (> 0.85)
-                if max_sim >= 0.85:
-                    score = max_sim
+            elif JaroWinkler and tok_m1 and tok_m2:
+                # Fuzzy Metaphone match without soundex padding interference
+                sim_m = JaroWinkler.similarity(tok_m1, tok_m2)
+                if sim_m >= 0.88 and char_sim >= 0.75:
+                    score = sim_m
                     
             if score > best_score:
                 best_score = score
@@ -207,7 +225,7 @@ def compare_phonetic_similarity(title1: str, title2: str) -> float:
                 if score >= 1.0:
                     break
                     
-        if best_j != -1 and best_score >= 0.80:
+        if best_j != -1 and best_score >= 0.70:
             used_indices.add(best_j)
             total_token_match_score += best_score
 

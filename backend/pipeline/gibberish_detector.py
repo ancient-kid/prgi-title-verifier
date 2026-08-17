@@ -23,19 +23,19 @@ KNOWN_ACRONYMS: Set[str] = {
 
 # Extremely rare or impossible English / Romanized Indian bigrams (letter pairs)
 INVALID_BIGRAMS: Set[str] = {
-    "bk", "bx", "bz", "cb", "cd", "cf", "cg", "cj", "cx", "cz",
-    "db", "dc", "df", "dg", "dx", "fb", "fc", "fd", "fg", "fj", "fk", "fm", "fn", "fp", "fq", "fx", "fz",
+    "bk", "bx", "bz", "cb", "cd", "cf", "cg", "cj", "cx",
+    "db", "dc", "df", "dg", "fb", "fc", "fd", "fg", "fj", "fk", "fm", "fn", "fp", "fq", "fx", "fz",
     "gb", "gc", "gd", "gf", "gj", "gk", "gp", "gq", "gx", "gz",
     "hb", "hc", "hd", "hf", "hg", "hj", "hk", "hp", "hq", "hx", "hz",
     "jb", "jc", "jd", "jf", "jg", "jh", "jk", "jl", "jm", "jn", "jp", "jq", "jr", "js", "jt", "jv", "jw", "jx", "jz",
-    "kx", "kz", "lx", "lz", "mx", "mz", "pb", "pc", "pd", "pf", "pj", "pq", "px", "pz",
+    "kx", "kz", "pb", "pc", "pd", "pf", "pj", "pq", "px", "pz",
     "qb", "qc", "qd", "qe", "qf", "qg", "qh", "qi", "qj", "qk", "ql", "qm", "qn", "qo", "qp", "qq", "qr", "qs", "qt", "qv", "qw", "qx", "qy", "qz",
-    "sx", "sz", "tb", "td", "tf", "tg", "tj", "tq", "tx", "tz",
+    "sz", "tb", "td", "tf", "tg", "tj", "tq",
     "vb", "vc", "vd", "vf", "vg", "vh", "vj", "vk", "vm", "vp", "vq", "vx", "vz",
     "wb", "wc", "wd", "wf", "wg", "wj", "wk", "wq", "wx", "wz",
     "xb", "xc", "xd", "xf", "xg", "xh", "xj", "xk", "xl", "xm", "xn", "xp", "xq", "xr", "xs", "xt", "xv", "xw", "xx", "xz",
-    "yb", "yc", "yd", "yf", "yg", "yh", "yj", "yk", "ym", "yp", "yq", "yr", "ys", "yt", "yv", "yw", "yx", "yz",
-    "zb", "zc", "zd", "zf", "zg", "zh", "zj", "zk", "zl", "zm", "zn", "zp", "zq", "zr", "zs", "zt", "zv", "zw", "zx", "zy", "zz"
+    "yq", "yx", "yy",
+    "zb", "zc", "zd", "zf", "zg", "zj", "zk", "zl", "zm", "zn", "zp", "zq", "zr", "zs", "zt", "zv", "zw", "zx"
 }
 
 # Unlikely character combinations at the end of words

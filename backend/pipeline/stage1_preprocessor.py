@@ -19,25 +19,39 @@ from backend.pipeline.gibberish_detector import validate_title_meaningfulness
 
 # Pure generic periodicities and non-distinctive modifier words
 PURE_GENERIC_WORDS: Set[str] = {
-    # English Periodicities & Generics
-    "the", "a", "an", "daily", "weekly", "fortnightly", "monthly", "bimonthly", 
-    "quarterly", "half-yearly", "yearly", "annual", "morning", "evening", 
-    "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
-    "today", "now", "news", "express", "times", "chronicle", "herald", "bulletin", 
-    "journal", "gazette", "post", "mail", "voice", "tribune", "mirror", "report", 
-    "reporter", "press", "media", "digest", "review", "dispatch", "update", 
-    "leader", "courier", "star", "standard", "observer", "frontline", "current",
+    # English Periodicities & Generics (Singular, Plural, Hyphen Parts)
+    "the", "a", "an", "daily", "dailies", "weekly", "weeklies", "biweekly", 
+    "fortnightly", "monthly", "monthlies", "bimonthly", "quarterly", "quarterlies", 
+    "half-yearly", "yearly", "annual", "annals", "half", "bi", "tri",
+    "morning", "evening", "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "weekend",
+    "today", "now", "current", "hours", "hour", "24x7", "247", "365", "24",
+
+    # Media Nouns & Formats (Singular & Plural)
+    "news", "express", "times", "chronicle", "chronicles", "herald", "bulletin", "bulletins", 
+    "journal", "journals", "gazette", "gazettes", "post", "posts", "mail", "voice", 
+    "tribune", "mirror", "report", "reports", "reporter", "reporters", "press", "media", 
+    "digest", "digests", "review", "reviews", "dispatch", "dispatches", "update", "updates", 
+    "leader", "courier", "star", "standard", "observer", "frontline", "headlines", "headline",
+    "edition", "editions", "network", "channel", "broadcast", "broadcasting", "digital", "online", "info", "information",
+
+    # Prefixes / Quality Modifiers
     "new", "super", "mega", "ultra", "prime", "real", "true", "live", "direct",
-    "india", "bharat", "hindustan", "national", "regional", "state", "city",
+
+    # Geographic & Scope Modifiers
+    "india", "bharat", "hindustan", "national", "regional", "state", "city", "world", 
+    "global", "international", "universal",
 
     # Hindi / Sanskrit / Devanagari Periodicities & Structural Terms
-    "dainik", "saptahik", "pakshik", "masik", "traimasik", "ardhavarshik", "varshik",
-    "samachar", "khabar", "sandesh", "patrika", "prabhat", "sandhya", "pratidin",
-    "aaj", "kal", "varta", "vartha", "suchna", "darshika", "shree", "shri", "naya", "nav",
+    "dainik", "saptahik", "pakshik", "masik", "traimasik", "ardhavarshik", "varshik", "varshiki",
+    "samachar", "samacharon", "khabar", "khabrein", "khabren", "sandesh", "patrika", "patrikayen", 
+    "prabhat", "sandhya", "pratidin", "aaj", "kal", "dopahar", "raat", "varta", "vartha", 
+    "suchna", "darshika", "shree", "shri", "sri", "naya", "nav", "samvad", "manch", "charcha",
+    "rashtriya", "desh", "pradesh", "nagar", "shahar", "gram", "gaon", "apna", "mera", "hamara",
     
-    # Regional Indian Generics
-    "bartaman", "sambad", "murasu", "malai", "sudarmalar", "mani", 
-    "taaza", "roznama", "akhbar"
+    # Regional Indian Generics (Bengali, Urdu, Tamil, Telugu, Marathi, Gujarati)
+    "bartaman", "sambad", "khabor", "patra", "murasu", "malai", "sudarmalar", "mani", 
+    "taaza", "roznama", "haftroza", "mahnama", "akhbar", "akhbarat", "seithi", "seithigal",
+    "dinakaran", "dinamalar", "dinamani", "sakal", "praja", "awam", "qaum", "qaumi"
 }
 
 # Alias for backward compatibility
@@ -46,18 +60,23 @@ GENERIC_MODIFIERS = PURE_GENERIC_WORDS
 # Prefix-specific words to strip
 GENERIC_PREFIXES: Set[str] = {
     "the", "a", "an", "daily", "weekly", "fortnightly", "monthly", "dainik", 
-    "saptahik", "masik", "shree", "shri", "nav", "naya", "aaj", "new", 
-    "super", "apna", "mera", "hamara"
+    "saptahik", "masik", "shree", "shri", "sri", "nav", "naya", "aaj", "new", 
+    "super", "mega", "ultra", "prime", "real", "true", "live", "direct",
+    "national", "regional", "state", "city", "rashtriya", "global", "international",
+    "apna", "mera", "hamara"
 }
 
 # Suffix-specific words to strip
 GENERIC_SUFFIXES: Set[str] = {
-    "times", "news", "express", "herald", "chronicle", "bulletin", "journal", 
-    "gazette", "post", "mail", "voice", "samachar", "sandesh", "patrika", 
-    "prabhat", "sandhya", "vani", "varta", "vartha", "today", "live", "24x7", 
-    "media", "press", "digest", "review", "daily", "weekly", "monthly", "yearly",
-    "annual", "tribune", "mirror", "star", "standard", "observer", "report",
-    "reporter", "courier", "leader", "dispatch", "update", "akhbar", "roznama"
+    "times", "news", "express", "herald", "chronicle", "chronicles", "bulletin", "bulletins", 
+    "journal", "journals", "gazette", "gazettes", "post", "posts", "mail", "voice", "samachar", 
+    "sandesh", "patrika", "patrikayen", "prabhat", "sandhya", "vani", "varta", "vartha", 
+    "today", "now", "live", "24x7", "247", "media", "press", "digest", "digests", "review", 
+    "reviews", "daily", "weekly", "monthly", "yearly", "annual", "tribune", "mirror", "star", 
+    "standard", "observer", "report", "reports", "reporter", "courier", "leader", "dispatch", 
+    "update", "updates", "headlines", "edition", "editions", "network", "channel", "broadcast", 
+    "akhbar", "akhbarat", "roznama", "india", "bharat", "hindustan", "national", "regional", 
+    "state", "city", "world", "global", "international", "universal"
 }
 
 # Explicitly prohibited characters: mathematical symbols, signs, currency, special punctuation

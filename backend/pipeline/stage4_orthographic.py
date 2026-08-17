@@ -55,9 +55,13 @@ def compute_orthographic_similarity(title1: str, title2: str) -> Dict[str, float
         raw_token_sort = fuzz.token_sort_ratio(t1, t2) / 100.0
         token_sim = raw_token_sort if jaccard >= 0.5 else raw_token_sort * (0.2 + 0.8 * jaccard)
         
-        # Only use Jaro-Winkler if edit similarity is already high (>=0.70) or short single word
-        if lev >= 0.70 or max(len(t1), len(t2)) <= 10:
+        # For single-word strings or very high edit similarity (>=0.85), Jaro-Winkler is effective.
+        # For multi-word titles with lower edit similarity, Levenshtein edit distance and Token Sort are primary.
+        is_single_word = (" " not in t1 and " " not in t2)
+        if lev >= 0.85 or (is_single_word and lev >= 0.70):
             jw = JaroWinkler.similarity(t1, t2)
+        elif is_single_word and max(len(t1), len(t2)) <= 6 and lev >= 0.60:
+            jw = JaroWinkler.similarity(t1, t2) * 0.85
         else:
             jw = lev
             

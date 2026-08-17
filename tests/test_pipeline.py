@@ -104,12 +104,29 @@ def test_stage3_frankentitle():
 
 
 def test_stage4a_phonetic_similarity():
-    # Test case 5: "Namascar" vs "Namaskar" -> 100% or very high phonetic match
+    # Test case 5A: True homophones -> high phonetic match
     sim = compare_phonetic_similarity("namascar", "namaskar")
     assert sim >= 0.90
 
     sim2 = compare_phonetic_similarity("daineq", "dainik")
     assert sim2 >= 0.85
+
+    sim3 = compare_phonetic_similarity("bharat", "bharath")
+    assert sim3 >= 0.90
+
+
+def test_stage4a_phonetic_avoid_overblocking_short_words():
+    # Test case 5B: Distinct short words must NOT be falsely equated (no Soundex zero-padding artifact)
+    assert compare_phonetic_similarity("bat", "buzz") < 0.30
+    assert compare_phonetic_similarity("pen", "pit") < 0.30
+    assert compare_phonetic_similarity("cat", "cup") < 0.30
+    assert compare_phonetic_similarity("red", "run") < 0.30
+    assert compare_phonetic_similarity("top", "ten") < 0.30
+    assert compare_phonetic_similarity("sun", "sea") < 0.30
+
+    # Minimal vowel pairs must be distinguished
+    assert compare_phonetic_similarity("bat", "bet") < 0.50
+    assert compare_phonetic_similarity("pan", "pin") < 0.50
 
 
 def test_stage4b_orthographic_similarity():
@@ -118,13 +135,40 @@ def test_stage4b_orthographic_similarity():
     assert res["jaro_winkler"] >= 0.90
     assert res["aggregate_orthographic_score"] >= 0.90
 
+    # Distinct short words should not be inflated by Jaro-Winkler
+    res_orbit = compute_orthographic_similarity("orbit", "debit")
+    assert res_orbit["aggregate_orthographic_score"] < 0.65
+
 
 def test_stage4c_cross_lingual_semantic():
-    # Test case 7: "Daily Evening" vs "Pratidin Sandhya" -> High cross-lingual score
+    # Test case 7A: English <-> Indian cross-lingual score
     engine = SemanticSimilarityEngine()
     score, pairs = engine.calculate_lexicon_similarity("daily evening", "pratidin sandhya")
     assert score >= 0.85
     assert len(pairs) > 0
+
+
+def test_stage4c_regional_indian_cross_lingual():
+    # Test case 7B: Indian <-> Indian regional cross-lingual translation
+    engine = SemanticSimilarityEngine()
+    score_morn, pairs_morn = engine.calculate_lexicon_similarity("prabhat samachar", "sakala sambad")
+    assert score_morn >= 0.85
+    assert len(pairs_morn) >= 2
+
+    score_eve, pairs_eve = engine.calculate_lexicon_similarity("pratidin sandhya", "rozana shaam")
+    assert score_eve >= 0.85
+    assert len(pairs_eve) >= 2
+
+
+def test_stage1_geographic_anchor_extraction():
+    # Test case 7C: Geographic and scope words stripped from anchors
+    res_india = extract_anchor_words("Delta India")
+    res_bharat = extract_anchor_words("Delta Bharat")
+    res_world = extract_anchor_words("Delta World")
+
+    assert res_india["anchor_words"] == "delta"
+    assert res_bharat["anchor_words"] == "delta"
+    assert res_world["anchor_words"] == "delta"
 
 
 def test_lock_manager():
@@ -183,3 +227,8 @@ def test_end_to_end_engine_verification():
     r4 = engine.verify_title("Zylophonic Quantum Astroflora")
     assert r4["status"] == "Approved"
     assert r4["verification_probability"] >= 60.0
+
+    # 7. Novel distinctive compound title
+    r_aurora = engine.verify_title("Aurora Nebula Post")
+    assert r_aurora["status"] == "Approved"
+    assert r_aurora["verification_probability"] >= 60.0

@@ -19,6 +19,7 @@ import pandas as pd
 from backend.config import DATA_DIR, TITLES_FILE, TITLES_PARQUET_FILE, TITLES_SQLITE_FILE
 from backend.pipeline.stage1_preprocessor import clean_text, extract_anchor_words
 from backend.pipeline.stage4_phonetic import compute_phonetic_fingerprint, get_double_metaphone, indic_soundex
+from backend.pipeline.stage4_semantic import CROSS_LINGUAL_LEXICON, INDIAN_TO_ENGLISH
 
 
 class TitleIndex:
@@ -33,6 +34,7 @@ class TitleIndex:
         self.ngram_index: Dict[str, List[int]] = defaultdict(list)
         self.phonetic_index: Dict[str, List[int]] = defaultdict(list)
         self.indic_soundex_index: Dict[str, List[int]] = defaultdict(list)
+        self.concept_index: Dict[str, List[int]] = defaultdict(list)
         
         self.is_loaded = False
 
@@ -189,6 +191,7 @@ class TitleIndex:
         self.ngram_index = defaultdict(list)
         self.phonetic_index = defaultdict(list)
         self.indic_soundex_index = defaultdict(list)
+        self.concept_index = defaultdict(list)
         
         titles_list = df["title"].tolist()
         reg_list = df["registration_no"].tolist() if "registration_no" in df.columns else ["N/A"] * len(df)
@@ -239,13 +242,30 @@ class TitleIndex:
                     p_ind = indic_soundex(w)
                     if p_ind:
                         self.indic_soundex_index[p_ind].append(entry_id)
+                        
+                    # 3. Semantic Concept indexing
+                    if w in CROSS_LINGUAL_LEXICON:
+                        self.concept_index[w].append(entry_id)
+                    elif w in INDIAN_TO_ENGLISH:
+                        for eng_c in INDIAN_TO_ENGLISH[w]:
+                            self.concept_index[eng_c].append(entry_id)
                     
-            # 3. Character 3-gram indexing (for anchor or short title)
+            # 4. Character 3-gram indexing (for anchor or short title)
             target_gram = anchor if anchor else clean_str
             padded = f"_{target_gram}_"
             for i in range(len(padded) - 2):
                 gram = padded[i:i+3]
                 self.ngram_index[gram].append(entry_id)
+
+    def find_exact(self, cleaned_title: str) -> Optional[Dict[str, Any]]:
+        """
+        O(1) lookup for exact title match in registered titles registry.
+        """
+        clean = cleaned_title.strip().lower()
+        if clean in self.title_to_id:
+            tid = self.title_to_id[clean]
+            return self.titles_data[tid]
+        return None
 
     def find_candidates(
         self,
@@ -254,47 +274,74 @@ class TitleIndex:
         limit: int = 150
     ) -> List[Dict[str, Any]]:
         """
-        Fast multi-vector inverted index search in < 1ms.
+        Fast multi-vector inverted index search in < 1ms with weighted candidate ranking.
         """
         if not self.titles_data:
             return []
             
-        candidate_ids = set()
+        candidate_scores: Dict[int, float] = defaultdict(float)
+        matched_tokens_per_cand: Dict[int, Set[str]] = defaultdict(set)
         
         # 1. Exact Anchor Word matches
         if anchor_words:
             for at in anchor_words.split():
                 if at in self.word_index:
-                    candidate_ids.update(self.word_index[at][:80])
+                    for tid in self.word_index[at]:
+                        candidate_scores[tid] += 4.0
+                        matched_tokens_per_cand[tid].add(at)
                     
         # 2. Word token matches
         tokens = cleaned_title.split()
         for t in tokens:
             if t in self.word_index:
-                candidate_ids.update(self.word_index[t][:40])
+                for tid in self.word_index[t]:
+                    candidate_scores[tid] += 3.0
+                    matched_tokens_per_cand[tid].add(t)
                 
             # 3. Phonetic matches
             p_meta, _ = get_double_metaphone(t)
             if p_meta in self.phonetic_index:
-                candidate_ids.update(self.phonetic_index[p_meta][:30])
+                for tid in self.phonetic_index[p_meta][:120]:
+                    candidate_scores[tid] += 1.5
                 
             p_ind = indic_soundex(t)
             if p_ind in self.indic_soundex_index:
-                candidate_ids.update(self.indic_soundex_index[p_ind][:20])
+                for tid in self.indic_soundex_index[p_ind][:120]:
+                    candidate_scores[tid] += 1.5
                 
-        # 4. Trigram matches if candidates are sparse
-        if len(candidate_ids) < 20:
+            # 4. Semantic Concept alias matches
+            if t in CROSS_LINGUAL_LEXICON:
+                if t in self.concept_index:
+                    for tid in self.concept_index[t]:
+                        candidate_scores[tid] += 3.0
+                        matched_tokens_per_cand[tid].add(t)
+            elif t in INDIAN_TO_ENGLISH:
+                for eng_c in INDIAN_TO_ENGLISH[t]:
+                    if eng_c in self.concept_index:
+                        for tid in self.concept_index[eng_c]:
+                            candidate_scores[tid] += 3.0
+                            matched_tokens_per_cand[tid].add(t)
+                
+        # 5. Multi-token / Multi-concept boost (titles matching 2+ words/concepts get prioritized)
+        for tid, matched_set in matched_tokens_per_cand.items():
+            if len(matched_set) > 1:
+                candidate_scores[tid] += len(matched_set) * 4.0
+
+        # 6. Trigram matches if candidate scores are sparse (< 30 candidates)
+        if len(candidate_scores) < 30:
             target_gram = anchor_words if anchor_words else cleaned_title
             padded = f"_{target_gram}_"
             for i in range(len(padded) - 2):
                 gram = padded[i:i+3]
                 if gram in self.ngram_index:
-                    candidate_ids.update(self.ngram_index[gram][:15])
+                    for tid in self.ngram_index[gram][:50]:
+                        candidate_scores[tid] += 0.8
                     
-        if not candidate_ids:
+        if not candidate_scores:
             return []
             
-        selected_ids = list(candidate_ids)[:limit]
+        sorted_candidates = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
+        selected_ids = [tid for tid, _ in sorted_candidates[:limit]]
         return [self.titles_data[tid] for tid in selected_ids]
 
     def search_titles(self, query: str, limit: int = 30, db: Optional[Any] = None) -> List[Dict[str, Any]]:

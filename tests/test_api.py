@@ -62,6 +62,18 @@ def test_api_verify_generic():
     assert data["decision"] == "REJECTED_STAGE_1"
 
 
+def test_api_verify_already_registered():
+    res = client.post("/api/verify", json={"title": "Morning Post"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["verification_probability"] == 0.0
+    assert data["status"] == "Rejected"
+    assert data["decision"] == "REJECTED_ALREADY_REGISTERED"
+    assert any("Already Registered Title" in r["rule"] for r in data["reasons"])
+    assert len(data["top_matches"]) > 0
+    assert data["top_matches"][0]["title"] == "MORNING POST"
+
+
 def test_api_verify_approved():
     res = client.post("/api/verify", json={"title": "Zylophonic Quantum Astroflora"})
     assert res.status_code == 200

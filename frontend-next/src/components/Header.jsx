@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, Layers, Lock, BookOpen, Database, ShieldCheck } from "lucide-react";
 
 export default function Header({ activeTab, setActiveTab }) {
-  const [systemStatus, setSystemStatus] = useState("82,628+ Titles Indexed");
+  const [systemStatus, setSystemStatus] = useState("160,000+ Titles Indexed");
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -12,9 +12,9 @@ export default function Header({ activeTab, setActiveTab }) {
         const res = await fetch("/api/health");
         if (res.ok) {
           const data = await res.json();
-          if (data.total_registered_titles) {
-            setSystemStatus(`${data.total_registered_titles.toLocaleString()}+ Titles Indexed`);
-          }
+          // if (data.total_registered_titles) {
+          //   setSystemStatus(`${data.total_registered_titles.toLocaleString()}+ Titles Indexed`);
+          // }
         }
       } catch (e) {
         // Fallback default

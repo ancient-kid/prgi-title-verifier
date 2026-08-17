@@ -128,11 +128,8 @@ class SemanticSimilarityEngine:
                         matched_pairs.append(f"'{w1}' (Indian) ~= '{w2}' (English)")
                         matches += 1
                         break
-            elif w1 in INDIAN_TO_ENGLISH:
-                engs1 = INDIAN_TO_ENGLISH[w1]
-                for w2 in t2_words:
-                    if w2 in INDIAN_TO_ENGLISH and (engs1 & INDIAN_TO_ENGLISH[w2]):
-                        matched_pairs.append(f"'{w1}' ~= '{w2}'")
+                    elif w2 in INDIAN_TO_ENGLISH and (engs & INDIAN_TO_ENGLISH[w2]):
+                        matched_pairs.append(f"'{w1}' (Regional) ~= '{w2}' (Regional)")
                         matches += 1
                         break
 
