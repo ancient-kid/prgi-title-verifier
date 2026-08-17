@@ -49,6 +49,7 @@ class TitleVerificationResponse(BaseModel):
     top_matches: Optional[List[MatchItem]] = []
     stage_results: Optional[Dict[str, Any]] = None
     suggestions: List[str]
+    ai_suggestions: Optional[List[Dict[str, Any]]] = []
 
 
 class BatchVerificationRequest(BaseModel):

@@ -18,7 +18,8 @@ import {
   SpellCheck,
   Globe,
   Copy,
-  Lightbulb
+  Lightbulb,
+  Sparkles
 } from "lucide-react";
 
 export default function VerificationStudio({ setActiveTab }) {
@@ -566,6 +567,51 @@ export default function VerificationStudio({ setActiveTab }) {
                 <li key={i}>{sug}</li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Pre-Verified AI Title Alternatives */}
+        {result?.ai_suggestions && result.ai_suggestions.length > 0 && (
+          <div className="p-4 rounded-xl bg-[#F0F7F4] border border-[#1E7B62]/30 flex flex-col gap-2.5 text-xs">
+            <div className="font-bold text-[#166552] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#1E7B62]" />
+                <span>Pre-Verified Title Alternatives</span>
+              </div>
+              <span className="text-[10px] font-semibold text-[#1E7B62] bg-[#D5EDE3] px-2 py-0.5 rounded-full">
+                Auto-Verified Matrix
+              </span>
+            </div>
+            <p className="text-[11px] text-[#4A5568]">
+              Click any pre-verified alternative below to instantly test registration eligibility:
+            </p>
+            <div className="flex flex-col gap-2 mt-1">
+              {result.ai_suggestions.map((item, i) => (
+                <div
+                  key={i}
+                  onClick={() => {
+                    setTitle(item.title);
+                    handleVerify(item.title);
+                  }}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#1E7B62]/30 hover:border-[#1E7B62] hover:shadow-sm transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#166552] group-hover:text-[#1E7B62] text-xs">+ {item.title}</span>
+                    {item.category && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#EAE4D6] text-[#4A5568]">
+                        {item.category}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-[#64748B] hidden sm:inline">{item.reason}</span>
+                    <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-[#D5EDE3] text-[#166552] group-hover:bg-[#1E7B62] group-hover:text-white transition-all">
+                      {Math.round(item.verification_probability)}% Prob
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
