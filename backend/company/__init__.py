@@ -1,0 +1,3 @@
+"""
+Company Name Verification Module
+"""
