@@ -11,7 +11,7 @@ sys.path.append(str(ROOT))
 
 import pytest
 from backend.lock_manager import LockManager
-from backend.pipeline.stage1_preprocessor import extract_anchor_words
+from backend.pipeline.stage1_preprocessor import extract_anchor_words, validate_title_structure
 from backend.pipeline.stage2_guidelines import check_guidelines
 from backend.pipeline.stage3_frankentitle import FrankentitleDetector
 from backend.pipeline.stage4_orthographic import compute_orthographic_similarity
@@ -21,9 +21,42 @@ from backend.data_loader import TitleIndex
 from backend.pipeline.engine import TitleVerificationEngine
 
 
+def test_stage1_prohibited_symbols():
+    # Test case 1A: Non-text characters, mathematical symbols (+, *, etc.), emojis
+    res_plus = extract_anchor_words("News+")
+    assert res_plus["is_valid_structure"] is False
+    assert res_plus["error_type"] == "PROHIBITED_SYMBOLS"
+    assert "Prohibited Non-Text Characters" in res_plus["rejection_reason"]
+
+    res_star = extract_anchor_words("Daily*Express")
+    assert res_star["is_valid_structure"] is False
+    assert res_star["error_type"] == "PROHIBITED_SYMBOLS"
+
+    res_hash = extract_anchor_words("Star #1")
+    assert res_hash["is_valid_structure"] is False
+    assert res_hash["error_type"] == "PROHIBITED_SYMBOLS"
+
+
+def test_stage1_purely_numeric():
+    # Test case 1B: Purely numeric titles (just numbers)
+    res_num = extract_anchor_words("12345")
+    assert res_num["is_valid_structure"] is False
+    assert res_num["error_type"] == "PURE_NUMERIC"
+    assert "Numeric-Only Title Violation" in res_num["rejection_reason"]
+
+    res_year = extract_anchor_words("2024")
+    assert res_year["is_valid_structure"] is False
+    assert res_year["error_type"] == "PURE_NUMERIC"
+
+    res_spaced_num = extract_anchor_words("24 7")
+    assert res_spaced_num["is_valid_structure"] is False
+    assert res_spaced_num["error_type"] == "PURE_NUMERIC"
+
+
 def test_stage1_anchor_extraction():
-    # Test case 1: "The Daily Mumbai Express" -> Anchor should be "mumbai"
+    # Test case 1C: "The Daily Mumbai Express" -> Anchor should be "mumbai"
     res = extract_anchor_words("The Daily Mumbai Express")
+    assert res["is_valid_structure"] is True
     assert res["is_purely_generic"] is False
     assert res["anchor_words"] == "mumbai"
     assert "the" in res["stripped_prefixes"]
@@ -34,6 +67,7 @@ def test_stage1_anchor_extraction():
 def test_stage1_purely_generic_rejection():
     # Test case 2: "The Daily News" -> Pure generic
     res = extract_anchor_words("The Daily News")
+    assert res["is_valid_structure"] is True
     assert res["is_purely_generic"] is True
     assert "Pure Generic Title Violation" in res["rejection_reason"]
 
@@ -118,22 +152,34 @@ def test_end_to_end_engine_verification():
     lm = LockManager()
     engine = TitleVerificationEngine(titles_index=index, lock_manager=lm)
 
-    # 1. Prohibited word -> 0%
+    # 1. Prohibited symbols -> 0%
+    r_sym = engine.verify_title("News+")
+    assert r_sym["verification_probability"] == 0.0
+    assert r_sym["status"] == "Rejected"
+    assert r_sym["decision"] == "REJECTED_PROHIBITED_SYMBOLS"
+
+    # 2. Purely numeric -> 0%
+    r_num = engine.verify_title("2024")
+    assert r_num["verification_probability"] == 0.0
+    assert r_num["status"] == "Rejected"
+    assert r_num["decision"] == "REJECTED_PURE_NUMERIC"
+
+    # 3. Prohibited word -> 0%
     r1 = engine.verify_title("The Crime Investigation Daily")
     assert r1["verification_probability"] == 0.0
     assert r1["status"] == "Rejected"
 
-    # 2. Pure generic -> 0%
+    # 4. Pure generic -> 0%
     r2 = engine.verify_title("The Daily News")
     assert r2["verification_probability"] == 0.0
     assert r2["status"] == "Rejected"
 
-    # 3. Phonetic homophone of registered title -> high similarity, low probability
+    # 5. Phonetic homophone of registered title -> high similarity, low probability
     r3 = engine.verify_title("Namascar India")
     assert r3["status"] == "Rejected"
     assert r3["verification_probability"] <= 25.0
 
-    # 4. Novel distinct title -> High verification probability
+    # 6. Novel distinct title -> High verification probability
     r4 = engine.verify_title("Zylophonic Quantum Astroflora")
     assert r4["status"] == "Approved"
     assert r4["verification_probability"] >= 60.0

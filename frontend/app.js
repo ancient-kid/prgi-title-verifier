@@ -261,7 +261,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Stage 1
         if (s1) {
-            if (s1.is_purely_generic) {
+            if (s1.is_valid_structure === false) {
+                step1.className = "funnel-step failed";
+                step1Status.innerHTML = '<i data-lucide="x-circle"></i>';
+                if (s1.error_type === "PROHIBITED_SYMBOLS") {
+                    step1Sub.textContent = "Failed: Prohibited non-text characters, mathematical symbols, or emojis detected.";
+                } else if (s1.error_type === "PURE_NUMERIC") {
+                    step1Sub.textContent = "Failed: Numeric-only title prohibited (substantive text words required).";
+                } else {
+                    step1Sub.textContent = "Failed: Structural validation error.";
+                }
+            } else if (s1.is_purely_generic) {
                 step1.className = "funnel-step failed";
                 step1Status.innerHTML = '<i data-lucide="x-circle"></i>';
                 step1Sub.textContent = "Failed: Purely generic modifiers without distinctive anchor word.";

@@ -96,12 +96,58 @@ class TitleVerificationEngine:
                     ]
                 }
 
-        # Stage 1: Preprocessing & Anchor Extraction
+        # Stage 1: Preprocessing, Structural Validation & Anchor Extraction
         s1_res = extract_anchor_words(raw_title)
         cleaned_title = s1_res["cleaned_title"]
         tokens = s1_res["tokens"]
         anchor_words = s1_res["anchor_words"]
         
+        # 1A. Check structural invalidity (Prohibited Symbols, Math chars, Emojis, Pure Numbers)
+        if not s1_res.get("is_valid_structure", True):
+            elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            error_type = s1_res.get("error_type", "STRUCTURAL_ERROR")
+            decision_code = f"REJECTED_{error_type}"
+            
+            suggestions = []
+            if error_type == "PROHIBITED_SYMBOLS":
+                suggestions.append("Remove all symbols, signs, mathematical symbols ('+', '*', etc.), punctuation, and emojis from the title.")
+                suggestions.append("Spell out words in full alphabetical text (e.g. use 'Plus' instead of '+', or 'Star' instead of '*').")
+            elif error_type == "PURE_NUMERIC":
+                suggestions.append("Combine numerical digits with substantive distinctive alphabetical words (e.g. 'Channel 24', 'Studio 365').")
+                suggestions.append("Do not submit publication titles consisting exclusively of numbers or digits.")
+            elif error_type in ("REPETITIVE_GIBBERISH", "UNPRONOUNCEABLE_GIBBERISH", "LOW_ENTROPY_GIBBERISH"):
+                suggestions.append("Ensure all words in the title are meaningful and pronounceable in English or recognized Indian languages.")
+                suggestions.append("Avoid random key mashing or unpronounceable character combinations (e.g. 'ghibrisg', 'qwrtp').")
+                suggestions.append("If using an acronym, use standard, recognized abbreviations (e.g. 'BBC', 'NDTV', 'ISRO').")
+            else:
+                suggestions.append("Ensure the title contains valid text characters.")
+
+            return {
+                "raw_title": raw_title,
+                "cleaned_title": cleaned_title,
+                "anchor_words": anchor_words,
+                "verification_probability": 0.0,
+                "status": "Rejected",
+                "decision": decision_code,
+                "execution_time_ms": elapsed_ms,
+                "reasons": [
+                    {
+                        "stage": "Stage 1: Structural & Symbol Verification",
+                        "rule": s1_res["rule"],
+                        "guideline_ref": s1_res["guideline_ref"],
+                        "explanation": s1_res["rejection_reason"]
+                    }
+                ],
+                "stage_results": {
+                    "stage1": s1_res,
+                    "stage2": None,
+                    "stage3": None,
+                    "stage4": None
+                },
+                "suggestions": suggestions
+            }
+
+        # 1B. Check purely generic composition
         if s1_res["is_purely_generic"]:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             return {
@@ -116,7 +162,7 @@ class TitleVerificationEngine:
                     {
                         "stage": "Stage 1: Pre-processing & Anchor Extraction",
                         "rule": "Pure Generic Title Violation",
-                        "guideline_ref": "Guideline 8",
+                        "guideline_ref": "Guideline 8 (Generic Terms)",
                         "explanation": s1_res["rejection_reason"]
                     }
                 ],

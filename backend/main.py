@@ -284,6 +284,22 @@ def get_guidelines():
                 "title": "Negative Connotations, Obscene & Crime Terms",
                 "description": "Titles should be meaningful and clear. Titles with negative connotations with religious sentiments, obscene, absurd or offensive to public sentiments or those that could be misused with words like 'crime', 'corruption' etc. will not be registered.",
                 "examples": ["Crime", "Corruption", "Scam", "Extortion", "Vulgar / Obscene words", "Offensive religious terms"]
+                "guideline_ref": "PRGI General Rule",
+                "title": "Non-Text Characters, Symbols & Emojis Prohibition",
+                "description": "Titles containing non-text characters, signs, symbols including mathematical symbols ('+', '*', etc.), pictographs, hallmarks, logos, monograms, phonograms, emojis, etc. are strictly prohibited.",
+                "examples": ["News+", "Daily*Express", "Star #1", "News 📰", "Daily@Morning"]
+            },
+            {
+                "guideline_ref": "PRGI General Rule",
+                "title": "Numeric-Only Title Prohibition",
+                "description": "Titles consisting solely of numbers or digits without substantive alphabetical/text characters are not permitted.",
+                "examples": ["12345", "2024", "24 7", "99 100"]
+            },
+            {
+                "guideline_ref": "Guideline 12",
+                "title": "Disallowed Law Enforcement & State Organ Words",
+                "description": "Prohibits words implying official authority, police, military, courts, or vigilance bodies.",
+                "examples": ["Police", "Crime", "CBI", "CID", "Army", "Vigilance", "Sarkar", "Court"]
             },
             {
                 "guideline_ref": "Guideline 4",
