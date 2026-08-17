@@ -1004,7 +1004,16 @@ textarea:focus {
     background: rgba(99, 102, 241, 0.15);
     color: #A5B4FC;
     display: inline-block;
-    margin-bottom: 0.5rem;
+}
+
+.rule-category-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #6EE7B7;
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .rule-title {

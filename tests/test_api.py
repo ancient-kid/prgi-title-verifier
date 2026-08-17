@@ -112,3 +112,17 @@ def test_api_apply_and_lock():
 
     # Release lock
     client.post(f"/api/locks/release?title={unique_title}&applicant_id=TEST_USER_1")
+
+
+def test_api_titles_search_btree():
+    res = client.get("/api/titles/search?query=Times&limit=10")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["query"] == "Times"
+    assert "titles" in data
+    assert len(data["titles"]) > 0
+    first = data["titles"][0]
+    assert "title" in first
+    assert "registration_no" in first
+    assert "language" in first
+

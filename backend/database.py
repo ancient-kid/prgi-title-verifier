@@ -23,10 +23,10 @@ class RegisteredTitleModel(Base):
     __tablename__ = "registered_titles"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(500), nullable=False)
+    title = Column(String(500), nullable=False, index=True)
     cleaned_title = Column(String(500), nullable=False, index=True)
     anchor_words = Column(String(255), index=True)
-    registration_no = Column(String(100), unique=True, index=True)
+    registration_no = Column(String(100), index=True)
     language = Column(String(100), default="English")
     state = Column(String(100), default="National")
     periodicity = Column(String(100), default="Daily")

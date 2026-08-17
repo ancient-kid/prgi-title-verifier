@@ -633,26 +633,65 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshLocksBtn.addEventListener("click", loadActiveLocks);
 
     // =========================================================
-    // TAB 4: PRGI Rulebook
+    // TAB 4: PRGI Rulebook (All 18 Statutory Guidelines)
     // =========================================================
+    let allGuidelinesData = [];
+
     async function loadGuidelines() {
         const container = document.getElementById("rules-cards-container");
+        const filterInput = document.getElementById("rules-search-input");
         try {
-            const res = await fetch("/api/guidelines");
-            const data = await res.json();
-            container.innerHTML = data.guidelines.map(g => `
-                <div class="rule-card">
-                    <span class="rule-badge">${g.guideline_ref}</span>
-                    <div class="rule-title">${g.title}</div>
-                    <div class="rule-desc">${g.description}</div>
-                    <div class="rule-examples">
-                        ${g.examples.map(ex => `<span class="ex-tag">${ex}</span>`).join("")}
-                    </div>
-                </div>
-            `).join("");
+            if (allGuidelinesData.length === 0) {
+                const res = await fetch("/api/guidelines");
+                const data = await res.json();
+                allGuidelinesData = data.guidelines || [];
+            }
+            renderGuidelines(allGuidelinesData);
+
+            if (filterInput && !filterInput.dataset.listenerAttached) {
+                filterInput.dataset.listenerAttached = "true";
+                filterInput.addEventListener("input", (e) => {
+                    const q = e.target.value.toLowerCase().trim();
+                    if (!q) {
+                        renderGuidelines(allGuidelinesData);
+                        return;
+                    }
+                    const filtered = allGuidelinesData.filter(g => 
+                        g.guideline_ref.toLowerCase().includes(q) ||
+                        g.title.toLowerCase().includes(q) ||
+                        g.description.toLowerCase().includes(q) ||
+                        (g.category && g.category.toLowerCase().includes(q)) ||
+                        (g.examples && g.examples.some(ex => ex.toLowerCase().includes(q)))
+                    );
+                    renderGuidelines(filtered);
+                });
+            }
         } catch (e) {
             console.error("Guidelines load error:", e);
         }
+    }
+
+    function renderGuidelines(list) {
+        const container = document.getElementById("rules-cards-container");
+        if (!list || list.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">No matching guidelines found.</div>`;
+            return;
+        }
+        container.innerHTML = list.map(g => `
+            <div class="rule-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span class="rule-badge">${g.guideline_ref}</span>
+                    ${g.category ? `<span class="rule-category-badge">${g.category}</span>` : ""}
+                </div>
+                <div class="rule-title">${g.title}</div>
+                <div class="rule-desc">${g.description}</div>
+                ${g.examples && g.examples.length > 0 ? `
+                    <div class="rule-examples">
+                        ${g.examples.map(ex => `<span class="ex-tag">${ex}</span>`).join("")}
+                    </div>
+                ` : ""}
+            </div>
+        `).join("");
     }
 
     // =========================================================
