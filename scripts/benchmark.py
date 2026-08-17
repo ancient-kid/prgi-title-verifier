@@ -167,13 +167,31 @@ BENCHMARK_TEST_CASES = [
         "expected_prob_max": 25.0,
         "category": "Stage 4C (Cross-Lingual - Jan Vani)"
     },
+    {
+        "title": "Truth Mirror",
+        "expected_status": "Rejected",
+        "expected_prob_max": 25.0,
+        "category": "Stage 4C (Cross-Lingual - Satya Darpan)"
+    },
+    {
+        "title": "Sakala Sambad",
+        "expected_status": "Rejected",
+        "expected_prob_max": 25.0,
+        "category": "Stage 4C (Regional - Morning News)"
+    },
 
-    # 9. Novel distinctive title (Should be Approved with high probability)
+    # 9. Novel distinctive titles (Should be Approved with high probability)
     {
         "title": "Zylophonic Quantum Astroflora",
         "expected_status": "Approved",
         "expected_prob_min": 60.0,
         "category": "Eligible / Novel Distinctive Title"
+    },
+    {
+        "title": "Aurora Nebula Post",
+        "expected_status": "Approved",
+        "expected_prob_min": 60.0,
+        "category": "Eligible / Novel Compound Title"
     }
 ]
 

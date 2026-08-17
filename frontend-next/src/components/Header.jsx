@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, Layers, Lock, BookOpen, Database, ShieldCheck } from "lucide-react";
 
 export default function Header({ activeTab, setActiveTab }) {
-  const [systemStatus, setSystemStatus] = useState("1,60,000+ Titles Indexed");
+  const [systemStatus, setSystemStatus] = useState("160,000+ Titles Indexed");
 
   useEffect(() => {
     const checkHealth = async () => {

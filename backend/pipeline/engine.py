@@ -147,7 +147,88 @@ class TitleVerificationEngine:
                 "suggestions": suggestions
             }
 
-        # 1B. Check purely generic composition
+        # 1B. Check for EXACT Match against already registered titles in PRGI Registry
+        # If an exact registered title exists, this takes top precedence over generic/structural rules.
+        if self.titles_index:
+            exact_cand = self.titles_index.find_exact(cleaned_title)
+            if exact_cand:
+                elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+                reg_no = exact_cand.get("registration_no", "N/A")
+                state = exact_cand.get("state", "N/A")
+                lang = exact_cand.get("language", "N/A")
+                period = exact_cand.get("periodicity", "N/A")
+                orig_title = exact_cand.get("title", raw_title.upper())
+                
+                return {
+                    "raw_title": raw_title,
+                    "cleaned_title": cleaned_title,
+                    "anchor_words": anchor_words,
+                    "verification_probability": 0.0,
+                    "status": "Rejected",
+                    "decision": "REJECTED_ALREADY_REGISTERED",
+                    "highest_similarity_score": 100.0,
+                    "max_scores": {
+                        "orthographic": 100.0,
+                        "phonetic": 100.0,
+                        "semantic": 100.0
+                    },
+                    "execution_time_ms": elapsed_ms,
+                    "reasons": [
+                        {
+                            "stage": "Registry Search: Exact Title Conflict",
+                            "rule": "Already Registered Title (Exact Match Violation)",
+                            "guideline_ref": "PRP Act 2023 Section 5 / PRGI Guideline 5 (Identical Title Prohibition)",
+                            "explanation": (
+                                f"Direct Conflict: The title '{orig_title}' is already registered in the PRGI Registry "
+                                f"(Registration No: {reg_no}, State: {state}, Language: {lang}, Periodicity: {period}). "
+                                f"Under Section 5 of the Press and Registration of Periodicals Act, 2023 and PRGI Guideline 5, "
+                                f"exact duplicates of existing registered titles cannot be allotted."
+                            )
+                        }
+                    ],
+                    "top_matches": [
+                        {
+                            "title": orig_title,
+                            "registration_no": reg_no,
+                            "language": lang,
+                            "state": state,
+                            "periodicity": period,
+                            "orthographic_similarity": 1.0,
+                            "phonetic_similarity": 1.0,
+                            "semantic_similarity": 1.0,
+                            "highest_similarity": 1.0,
+                            "semantic_pairs": []
+                        }
+                    ],
+                    "stage_results": {
+                        "stage1": s1_res,
+                        "stage2": None,
+                        "stage3": None,
+                        "stage4": {
+                            "total_candidates_analyzed": 1,
+                            "top_matches": [
+                                {
+                                    "title": orig_title,
+                                    "registration_no": reg_no,
+                                    "language": lang,
+                                    "state": state,
+                                    "periodicity": period,
+                                    "orthographic_similarity": 1.0,
+                                    "phonetic_similarity": 1.0,
+                                    "semantic_similarity": 1.0,
+                                    "highest_similarity": 1.0,
+                                    "semantic_pairs": []
+                                }
+                            ]
+                        }
+                    },
+                    "suggestions": [
+                        f"Title '{raw_title}' is already an active registered publication and cannot be re-allocated.",
+                        "Choose a distinctive, original title not present in the PRGI registry."
+                    ]
+                }
+
+        # 1C. Check purely generic composition
         if s1_res["is_purely_generic"]:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             return {
@@ -278,8 +359,11 @@ class TitleVerificationEngine:
                     ortho_score = 1.0
                 elif anchor_words and cand_anchor and anchor_words == cand_anchor:
                     ortho_score = 0.95
+                elif anchor_words and cand_anchor:
+                    # When both titles have distinct anchors, anchor comparison takes precedence
+                    ortho_score = max(ortho_dict_anchor["aggregate_orthographic_score"], ortho_dict_full["aggregate_orthographic_score"] * 0.70)
                 else:
-                    ortho_score = max(ortho_dict_full["aggregate_orthographic_score"] * 0.9, ortho_dict_anchor["aggregate_orthographic_score"])
+                    ortho_score = ortho_dict_full["aggregate_orthographic_score"] * 0.75
                 
                 # 4C: Semantic comparison
                 sem_dict = self.semantic_engine.compare_semantic_similarity(cleaned_title, cand_clean)
@@ -287,13 +371,13 @@ class TitleVerificationEngine:
                 
                 max_score_for_cand = max(ortho_score, ph_score, sem_score)
                 
-                # Check exact token overlap between target anchor and candidate
-                cand_tokens = set(cand_clean.split())
+                # Check exact token overlap between target anchor and candidate non-generic anchor
+                cand_non_gen = set(cand_anchor.split()) if cand_anchor else set(cand_clean.split())
                 anchor_token_set = set(anchor_words.split()) if anchor_words else set(cleaned_title.split())
-                common_tokens = anchor_token_set.intersection(cand_tokens)
+                common_tokens = anchor_token_set.intersection(cand_non_gen)
                 if common_tokens:
                     # If candidate shares exact non-generic token, boost candidate similarity
-                    overlap_ratio = len(common_tokens) / max(len(anchor_token_set), len(cand_tokens))
+                    overlap_ratio = len(common_tokens) / max(len(anchor_token_set), len(cand_non_gen))
                     max_score_for_cand = max(max_score_for_cand, overlap_ratio * 0.95)
                     
                 max_ortho_score = max(max_ortho_score, ortho_score)
