@@ -25,8 +25,13 @@ from backend.config import (
 from backend.pipeline.stage1_preprocessor import extract_anchor_words
 from backend.pipeline.stage2_guidelines import check_guidelines
 from backend.pipeline.stage3_frankentitle import FrankentitleDetector
+from backend.pipeline.stage4_integration import compare_title_against_candidate
 from backend.pipeline.stage4_orthographic import compute_orthographic_similarity
-from backend.pipeline.stage4_phonetic import compare_phonetic_similarity, compute_phonetic_fingerprint
+from backend.pipeline.stage4_phonetic import (
+    compare_phonetic_similarity,
+    compare_phonetic_similarity_detailed,
+    compute_phonetic_fingerprint,
+)
 from backend.pipeline.stage4_semantic import SemanticSimilarityEngine
 
 
@@ -374,31 +379,18 @@ class TitleVerificationEngine:
                 cand_clean = cand.get("cleaned_title", cand_title.lower())
                 cand_anchor = cand.get("anchor_words", cand_clean)
                 
-                # 4A: Phonetic comparison (on both full title and anchor)
-                ph_score_full = compare_phonetic_similarity(cleaned_title, cand_clean)
-                ph_score_anchor = compare_phonetic_similarity(anchor_words, cand_anchor) if anchor_words and cand_anchor else 0.0
-                ph_score = max(ph_score_full, ph_score_anchor)
+                cmp_res = compare_title_against_candidate(
+                    new_title=cleaned_title,
+                    candidate_title=cand_clean,
+                    new_anchor=anchor_words,
+                    candidate_anchor=cand_anchor,
+                    semantic_engine=self.semantic_engine
+                )
                 
-                # 4B: Orthographic comparison (on both full title and anchor)
-                ortho_dict_full = compute_orthographic_similarity(cleaned_title, cand_clean)
-                ortho_dict_anchor = compute_orthographic_similarity(anchor_words, cand_anchor) if anchor_words and cand_anchor else {"aggregate_orthographic_score": 0.0}
-                
-                # If exact title match or high anchor similarity
-                if cleaned_title == cand_clean:
-                    ortho_score = 1.0
-                elif anchor_words and cand_anchor and anchor_words == cand_anchor:
-                    ortho_score = 0.95
-                elif anchor_words and cand_anchor:
-                    # When both titles have distinct anchors, anchor comparison takes precedence
-                    ortho_score = max(ortho_dict_anchor["aggregate_orthographic_score"], ortho_dict_full["aggregate_orthographic_score"] * 0.70)
-                else:
-                    ortho_score = ortho_dict_full["aggregate_orthographic_score"] * 0.75
-                
-                # 4C: Semantic comparison
-                sem_dict = self.semantic_engine.compare_semantic_similarity(cleaned_title, cand_clean)
-                sem_score = sem_dict["aggregate_semantic_score"]
-                
-                max_score_for_cand = max(ortho_score, ph_score, sem_score)
+                ortho_score = cmp_res["orthographic_similarity"]
+                ph_score = cmp_res["phonetic_similarity"]
+                sem_score = cmp_res["semantic_similarity"]
+                max_score_for_cand = cmp_res["highest_similarity"]
                 
                 # Check exact token overlap between target anchor and candidate non-generic anchor
                 cand_non_gen = set(cand_anchor.split()) if cand_anchor else set(cand_clean.split())
@@ -423,7 +415,7 @@ class TitleVerificationEngine:
                     "phonetic_similarity": round(ph_score, 4),
                     "semantic_similarity": round(sem_score, 4),
                     "highest_similarity": round(max_score_for_cand, 4),
-                    "semantic_pairs": sem_dict.get("concept_pairs", [])
+                    "semantic_pairs": cmp_res["diagnostics"]["semantic"].get("concept_pairs", [])
                 })
                 
             # Sort top matches by highest similarity descending
