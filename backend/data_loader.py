@@ -234,10 +234,12 @@ class TitleIndex:
                 if len(w) >= 2:
                     self.word_index[w].append(entry_id)
                     
-                    # 2. Phonetic token indexing
-                    p_meta, _ = get_double_metaphone(w)
-                    if p_meta:
-                        self.phonetic_index[p_meta].append(entry_id)
+                    # 2. Phonetic token indexing (both primary and secondary Double Metaphone keys)
+                    p_meta_prim, p_meta_sec = get_double_metaphone(w)
+                    if p_meta_prim:
+                        self.phonetic_index[p_meta_prim].append(entry_id)
+                    if p_meta_sec and p_meta_sec != p_meta_prim:
+                        self.phonetic_index[p_meta_sec].append(entry_id)
                         
                     p_ind = indic_soundex(w)
                     if p_ind:
@@ -298,11 +300,14 @@ class TitleIndex:
                     candidate_scores[tid] += 3.0
                     matched_tokens_per_cand[tid].add(t)
                 
-            # 3. Phonetic matches
-            p_meta, _ = get_double_metaphone(t)
-            if p_meta in self.phonetic_index:
-                for tid in self.phonetic_index[p_meta][:120]:
+            # 3. Phonetic matches (primary and secondary Double Metaphone + Indic-Soundex)
+            p_prim, p_sec = get_double_metaphone(t)
+            if p_prim in self.phonetic_index:
+                for tid in self.phonetic_index[p_prim][:120]:
                     candidate_scores[tid] += 1.5
+            if p_sec and p_sec != p_prim and p_sec in self.phonetic_index:
+                for tid in self.phonetic_index[p_sec][:120]:
+                    candidate_scores[tid] += 1.2
                 
             p_ind = indic_soundex(t)
             if p_ind in self.indic_soundex_index:
